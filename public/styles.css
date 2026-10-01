@@ -188,3 +188,8 @@ body {
     width: 100%;
   }
 }
+
+.download:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}

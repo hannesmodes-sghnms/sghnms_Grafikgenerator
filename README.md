@@ -1,6 +1,6 @@
-# SGHNMS Handball Social Generator
+# SGHNMS Social Generator
 
-Standalone-Generator fuer Instagram-Spieltag- und Ergebnisgrafiken auf Basis der handball.net API.
+Generator für Spieltags- und Ergebnisgrafiken aus der handball.net API.
 
 ## Start
 
@@ -9,48 +9,23 @@ npm install
 npm start
 ```
 
-Danach Port `3000` im Browser oeffnen.
+Danach Port 3000 öffnen.
 
-## Bedienung
+## Assets
 
-Auf der Generator-Seite:
-
-- Startdatum waehlen
-- Enddatum waehlen
-- `Spieltag` oder `Ergebnisse` waehlen
-- Slides generieren
-- jede Grafik per `PNG herunterladen` als 1080 x 1350 px exportieren
-
-## Background
-
-Das eigentliche SGHNMS-Hintergrundbild wird erwartet unter:
+Diese Dateien werden erwartet und bleiben bewusst außerhalb des ZIPs, wenn sie nicht in ChatGPT hochgeladen wurden:
 
 ```text
 public/assets/sghnms_images/sghnms_bg.png
-```
-
-Empfohlen: `1080 x 1350 px`.
-
-## Fonts
-
-### Bebas Neue
-
-Bebas Neue wird ueber `@fontsource/bebas-neue` als npm-Abhaengigkeit installiert und vom eigenen Node-Server ausgeliefert. Es gibt keine Abhaengigkeit zu Google Fonts oder zur SGHNMS-Website.
-
-### Edo
-
-Die Brush-Headline verwendet `Edo`. Bitte die von dir verwendete Fontdatei lokal ablegen als:
-
-```text
 public/assets/fonts/edo.ttf
 ```
 
-Die Fontdatei ist nicht Bestandteil des Repositories/ZIPs.
+Bebas Neue wird lokal über `@fontsource/bebas-neue` ausgeliefert.
 
-## PNG Rendering
+## PNG-Export
 
-Der Export erfolgt mit Playwright/Chromium. Vor dem Screenshot wartet der Renderer auf `document.fonts.ready`, damit der Export nicht versehentlich mit Fallback-Fonts erzeugt wird.
+Der PNG-Export läuft ab Version 0.3.0 direkt im Browser über `html2canvas`.
+Dadurch ist kein Playwright/Chromium mehr nötig und es müssen keine zusätzlichen
+Linux-Bibliotheken im Codespace installiert werden.
 
-## Cache
-
-handball.net API-Daten werden derzeit fuer 5 Minuten im Speicher gecacht.
+Die Ausgabegröße bleibt 1080 x 1350 Pixel.

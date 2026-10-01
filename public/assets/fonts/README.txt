@@ -1,5 +1,2 @@
-Lege die Edo-Fontdatei unter exakt diesem Pfad ab:
-
+Edo hier ablegen:
 public/assets/fonts/edo.ttf
-
-Der Generator referenziert diese Datei in public/slide.css.

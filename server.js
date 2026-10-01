@@ -1,7 +1,6 @@
 import express from "express";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { chromium } from "playwright";
 import {
   BRAND,
   CACHE_TTL,
@@ -21,6 +20,12 @@ const BEBAS_FONT_DIR = path.join(
   "@fontsource",
   "bebas-neue"
 );
+const HTML2CANVAS_DIR = path.join(
+  __dirname,
+  "node_modules",
+  "html2canvas",
+  "dist"
+);
 
 const app = express();
 
@@ -31,6 +36,19 @@ const app = express();
 app.use(
   "/vendor/bebas-neue",
   express.static(BEBAS_FONT_DIR, {
+    maxAge: "1y",
+    immutable: true
+  })
+);
+
+/*
+ * PNG-Export läuft vollständig im Browser.
+ * Dadurch brauchen wir auf dem Server weder Chromium noch
+ * Linux-Systembibliotheken für Playwright.
+ */
+app.use(
+  "/vendor/html2canvas",
+  express.static(HTML2CANVAS_DIR, {
     maxAge: "1y",
     immutable: true
   })
@@ -381,11 +399,43 @@ function renderMeta(meta) {
     .join("");
 }
 
+function opponentSizeClass(name = "") {
+  const length = String(name).trim().length;
+
+  if (length >= 38) return "opponent-box--xxl";
+  if (length >= 31) return "opponent-box--xl";
+  if (length >= 24) return "opponent-box--lg";
+  if (length >= 18) return "opponent-box--md";
+  return "";
+}
+
+function renderBrushTitle(title = "") {
+  return [...String(title).toUpperCase()]
+    .map((character) => {
+      if (character === "Ä") {
+        return '<span class="edo-umlaut">A</span>';
+      }
+
+      if (character === "Ö") {
+        return '<span class="edo-umlaut">O</span>';
+      }
+
+      if (character === "Ü") {
+        return '<span class="edo-umlaut">U</span>';
+      }
+
+      return escapeHtml(character);
+    })
+    .join("");
+}
+
 function renderMatchCard(match, mode) {
   const center =
     mode === "results"
-      ? `<div class="score">${escapeHtml(match.ownScore)}<span>:</span>${escapeHtml(match.opponentScore)}</div>`
+      ? `<div class="score"><span class="score-number">${escapeHtml(match.ownScore)}</span><span class="score-separator">:</span><span class="score-number">${escapeHtml(match.opponentScore)}</span></div>`
       : `<div class="time">${escapeHtml(match.time)}</div><div class="time-label">UHR</div>`;
+
+  const opponentClass = opponentSizeClass(match.opponent);
 
   return `
     <div class="match-card">
@@ -394,12 +444,14 @@ function renderMatchCard(match, mode) {
       </div>
       <div class="center-box">${center}</div>
       <div class="vs-box"><span>VS</span></div>
-      <div class="opponent-box">${escapeHtml(match.opponent)}</div>
+      <div class="opponent-box ${opponentClass}">${escapeHtml(match.opponent)}</div>
     </div>
   `;
 }
 
 function renderSlideHtml(slide, mode) {
+  const matchCount = Math.min(Math.max(slide.matches.length, 1), 9);
+
   return `<!doctype html>
 <html lang="de">
 <head>
@@ -410,23 +462,81 @@ function renderSlideHtml(slide, mode) {
   <link rel="stylesheet" href="/slide.css">
 </head>
 <body>
-  <div id="slide-root" class="slide">
+  <div id="slide-root" class="slide match-count-${matchCount}">
     <div class="slide-inner">
-      <h1>${escapeHtml(slide.title)}</h1>
+      <h1 class="slide-title">${renderBrushTitle(slide.title)}</h1>
       <div class="meta-bar">${renderMeta(slide.meta)}</div>
       <div class="matches">${slide.matches.map((m) => renderMatchCard(m, mode)).join("")}</div>
     </div>
   </div>
+
+  <script src="/vendor/html2canvas/html2canvas.min.js"></script>
   <script>
     (() => {
       const slide = document.getElementById("slide-root");
       const BASE_WIDTH = 1080;
       const BASE_HEIGHT = 1350;
+
       function fit() {
         const scale = Math.min(1, window.innerWidth / BASE_WIDTH);
         slide.style.transform = "scale(" + scale + ")";
+        document.body.style.width = (BASE_WIDTH * scale) + "px";
         document.body.style.height = (BASE_HEIGHT * scale) + "px";
       }
+
+      async function downloadSlidePng(filename) {
+        if (!window.html2canvas) {
+          throw new Error("PNG-Renderer konnte nicht geladen werden.");
+        }
+
+        await document.fonts.ready;
+
+        const oldTransform = slide.style.transform;
+        const oldBodyWidth = document.body.style.width;
+        const oldBodyHeight = document.body.style.height;
+
+        slide.style.transform = "none";
+        document.body.style.width = BASE_WIDTH + "px";
+        document.body.style.height = BASE_HEIGHT + "px";
+
+        try {
+          const canvas = await window.html2canvas(slide, {
+            width: BASE_WIDTH,
+            height: BASE_HEIGHT,
+            scale: 1,
+            useCORS: true,
+            allowTaint: false,
+            backgroundColor: null,
+            logging: false,
+            windowWidth: BASE_WIDTH,
+            windowHeight: BASE_HEIGHT
+          });
+
+          const blob = await new Promise((resolve, reject) => {
+            canvas.toBlob((value) => {
+              if (value) resolve(value);
+              else reject(new Error("PNG konnte nicht erzeugt werden."));
+            }, "image/png");
+          });
+
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement("a");
+          link.href = url;
+          link.download = (filename || "sghnms-slide") + ".png";
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+          setTimeout(() => URL.revokeObjectURL(url), 1000);
+        } finally {
+          slide.style.transform = oldTransform;
+          document.body.style.width = oldBodyWidth;
+          document.body.style.height = oldBodyHeight;
+          fit();
+        }
+      }
+
+      window.sghnmsDownloadSlidePng = downloadSlidePng;
+
       fit();
       window.addEventListener("resize", fit);
     })();
@@ -496,61 +606,6 @@ app.get("/slide", async (req, res) => {
   }
 });
 
-app.get("/api/download-png", async (req, res) => {
-  let browser = null;
-
-  try {
-    const query = validateQuery(req, res);
-    if (!query) return;
-
-    const index = Number(req.query.index || 0);
-    const slides = await slidesForQuery(query.from, query.to, query.mode);
-    const slide = slides[index];
-
-    if (!slide) {
-      return res.status(404).send("Slide nicht gefunden.");
-    }
-
-    browser = await chromium.launch({ headless: true });
-    const page = await browser.newPage({
-      viewport: { width: 1080, height: 1350 },
-      deviceScaleFactor: 1
-    });
-
-    const params = new URLSearchParams({
-      mode: query.mode,
-      from: query.from,
-      to: query.to,
-      index: String(index)
-    });
-
-    await page.goto(`http://127.0.0.1:${PORT}/slide?${params}`, {
-      waitUntil: "networkidle"
-    });
-
-    /*
-     * Fonts vollständig laden, bevor Playwright den Screenshot erstellt.
-     * Das verhindert Fallback-Fonts in einzelnen PNG-Exports.
-     */
-    await page.evaluate(async () => {
-      await document.fonts.ready;
-    });
-
-    const png = await page.locator("#slide-root").screenshot({ type: "png" });
-
-    res.setHeader("Content-Type", "image/png");
-    res.setHeader(
-      "Content-Disposition",
-      `attachment; filename="${slide.filename}.png"`
-    );
-    res.send(png);
-  } catch (error) {
-    console.error(error);
-    res.status(500).send(error.message || "PNG konnte nicht erzeugt werden.");
-  } finally {
-    if (browser) await browser.close();
-  }
-});
 
 app.listen(PORT, () => {
   console.log(`Handball Social Generator läuft auf Port ${PORT}`);

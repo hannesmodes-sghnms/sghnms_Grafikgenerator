@@ -1,18 +1,16 @@
 /*
  * SG Handball Neumünster – Social Slides
- * Ausgabeformat: 1080 x 1350 px (Instagram 4:5)
+ * 1080 x 1350 px / Instagram 4:5
  *
- * Fonts:
- * - Headline: Edo (lokal unter /assets/fonts/edo.ttf)
- * - Rest: Bebas Neue (Fontsource / npm)
+ * Assets:
+ * - Background: /assets/sghnms_images/sghnms_bg.png
+ * - Brush Headline: /assets/fonts/edo.ttf
+ * - Rest: Bebas Neue via lokalem Fontsource-Paket
  */
 
 @font-face {
   font-family: "Edo";
-  src:
-    local("Edo"),
-    local("Edo SZ"),
-    url("/assets/fonts/edo.ttf") format("truetype");
+  src: url("/assets/fonts/edo.ttf") format("truetype");
   font-style: normal;
   font-weight: 400;
   font-display: block;
@@ -26,12 +24,12 @@ html,
 body {
   margin: 0;
   padding: 0;
-  width: 100%;
   overflow: hidden;
   background: transparent;
 }
 
 body {
+  width: 1080px;
   min-height: 1px;
 }
 
@@ -39,18 +37,13 @@ body {
   position: relative;
   width: 1080px;
   height: 1350px;
-  transform-origin: top left;
   overflow: hidden;
+  transform-origin: top left;
   color: #fff;
   font-family: "Bebas Neue", "Arial Narrow", Arial, sans-serif;
-
-  /*
-   * Das eigentliche SGHNMS-Background-Asset.
-   * Falls die Datei noch fehlt, bleibt ein dunkelblauer Fallback sichtbar.
-   */
   background-color: #031947;
   background-image: url("/assets/sghnms_images/sghnms_bg.png");
-  background-position: center center;
+  background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
 }
@@ -59,51 +52,77 @@ body {
   position: relative;
   z-index: 2;
   height: 100%;
-  padding: 66px 58px 54px;
+  padding: 66px 58px 48px;
 }
 
-h1 {
-  position: relative;
-  z-index: 2;
-  margin: 0 0 24px;
-  min-height: 175px;
+.slide-title {
+  margin: 0 auto 24px;
+  min-height: 192px;
+  max-width: 970px;
   display: flex;
   align-items: center;
   justify-content: center;
   text-align: center;
+  white-space: nowrap;
   font-family: "Edo", "Bebas Neue", cursive;
-  font-size: 104px;
-  line-height: 0.9;
+  font-size: 106px;
+  line-height: 0.86;
   font-weight: 400;
-  letter-spacing: 0;
+  letter-spacing: -0.015em;
   text-transform: uppercase;
   color: #fff;
-  text-shadow: 2px 3px 0 rgba(0, 0, 0, 0.13);
+  text-shadow: 2px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+/*
+ * Edo enthält in manchen Fassungen kein Ä/Ö/Ü.
+ * Die Punkte werden deshalb separat gezeichnet, damit AUSWÄRTSSPIELE
+ * nicht als "AUSW RTSSPIELE" auseinanderfällt.
+ */
+.edo-umlaut {
+  position: relative;
+  display: inline-block;
+}
+
+.edo-umlaut::before,
+.edo-umlaut::after {
+  content: "";
+  position: absolute;
+  top: -0.12em;
+  width: 0.10em;
+  height: 0.10em;
+  border-radius: 2px;
+  background: currentColor;
+  transform: rotate(-18deg);
+}
+
+.edo-umlaut::before {
+  left: 0.28em;
+}
+
+.edo-umlaut::after {
+  left: 0.52em;
 }
 
 .meta-bar {
-  position: relative;
-  z-index: 2;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 19px;
-  min-height: 74px;
-  padding: 8px 34px 7px;
-  margin: 0 auto 44px;
-  width: fit-content;
-  max-width: 900px;
-  border: 3px solid rgba(255, 255, 255, 0.88);
+  gap: 21px;
+  width: 890px;
+  min-height: 76px;
+  margin: 0 auto 42px;
+  padding: 8px 32px 7px;
+  border: 3px solid rgba(255, 255, 255, 0.95);
   border-radius: 999px;
   background: #001441;
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.2);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.15);
 }
 
 .meta-part {
-  font-family: "Bebas Neue", "Arial Narrow", Arial, sans-serif;
   font-size: 38px;
   line-height: 1;
-  font-weight: 400;
+  font-weight: 700;
   letter-spacing: 0.01em;
   white-space: nowrap;
 }
@@ -113,51 +132,77 @@ h1 {
   height: 14px;
   flex: 0 0 auto;
   border-radius: 50%;
-  background: #ed1b24;
+  background: #ef1623;
 }
 
 .matches {
-  position: relative;
-  z-index: 2;
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 17px;
 }
 
 .match-card {
   display: grid;
-  grid-template-columns: 270px 300px 90px 1fr;
-  min-height: 155px;
+  grid-template-columns: 276px 286px 96px minmax(0, 1fr);
+  height: 164px;
   overflow: hidden;
   border-radius: 17px;
-  background: rgba(255, 255, 255, 0.98);
+  background: rgba(255, 255, 255, 0.985);
   color: #001441;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 4px 13px rgba(0, 0, 0, 0.16);
 }
 
 .team-box {
   display: flex;
-  align-items: center;
+  align-items: stretch;
   padding: 12px 0 12px 14px;
+  overflow: hidden;
 }
 
 .team-label {
-  width: 100%;
-  height: 100%;
-  min-height: 125px;
+  position: relative;
+  isolation: isolate;
+  width: calc(100% - 34px);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 16px 34px 16px 18px;
-  clip-path: polygon(0 0, 100% 0, 84% 100%, 0 100%);
+  padding: 14px 10px 14px 14px;
   background: #001441;
   color: #fff;
-  font-family: "Bebas Neue", "Arial Narrow", Arial, sans-serif;
   font-size: 46px;
-  font-weight: 400;
-  line-height: 1;
+  font-weight: 700;
+  line-height: 0.98;
   text-align: center;
   text-transform: uppercase;
+}
+
+.team-label::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  top: 0;
+  bottom: 0;
+  right: -28px;
+  width: 58px;
+  background: #001441;
+  transform: skewX(-14deg);
+  transform-origin: bottom;
+}
+
+.team-label::before {
+  content: "";
+  position: absolute;
+  right: -20px;
+  bottom: 6px;
+  width: 24px;
+  height: 32px;
+  opacity: 0.35;
+  background: repeating-linear-gradient(
+    135deg,
+    rgba(255,255,255,0.45) 0 2px,
+    transparent 2px 7px
+  );
+  transform: skewX(-14deg);
 }
 
 .center-box {
@@ -165,34 +210,39 @@ h1 {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 6px 8px;
-  color: #606060;
-  font-family: "Bebas Neue", "Arial Narrow", Arial, sans-serif;
+  padding: 6px 4px;
+  color: #626262;
+  text-align: center;
 }
 
-.time,
-.score {
-  font-size: 94px;
-  line-height: 0.86;
-  font-weight: 400;
+.time {
+  font-size: 91px;
+  line-height: 0.82;
+  font-weight: 700;
   letter-spacing: -0.025em;
+  white-space: nowrap;
+}
+
+.time-label {
+  margin-top: 11px;
+  font-size: 44px;
+  line-height: 0.84;
+  font-weight: 700;
 }
 
 .score {
   display: flex;
-  gap: 10px;
   align-items: center;
-}
-
-.score span {
-  font-size: 0.58em;
-}
-
-.time-label {
-  margin-top: 10px;
-  font-size: 48px;
+  justify-content: center;
+  gap: 8px;
+  font-size: 84px;
   line-height: 0.9;
-  font-weight: 400;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.score-separator {
+  font-size: 0.64em;
 }
 
 .vs-box {
@@ -205,26 +255,50 @@ h1 {
 .vs-box::before {
   content: "";
   position: absolute;
-  top: 18px;
-  bottom: 18px;
+  top: 17px;
+  bottom: 17px;
+  left: 50%;
   width: 2px;
-  background: #ccd2dc;
+  transform: translateX(-50%);
+  background: #cbd1db;
 }
 
 .vs-box span {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   display: grid;
   place-items: center;
-  width: 64px;
-  height: 64px;
+  width: 62px;
+  height: 62px;
   border-radius: 50%;
   background: #001441;
   color: #fff;
-  font-family: "Bebas Neue", "Arial Narrow", Arial, sans-serif;
-  font-size: 31px;
+  font-size: 29px;
   line-height: 1;
-  font-weight: 400;
+  font-weight: 700;
+}
+
+.vs-box span::before,
+.vs-box span::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 22px;
+  height: 12px;
+  transform: translateY(-50%);
+  background:
+    linear-gradient(#001441, #001441) 0 0 / 18px 2px no-repeat,
+    linear-gradient(#001441, #001441) 4px 5px / 14px 2px no-repeat,
+    linear-gradient(#001441, #001441) 8px 10px / 10px 2px no-repeat;
+}
+
+.vs-box span::before {
+  right: calc(100% + 6px);
+}
+
+.vs-box span::after {
+  left: calc(100% + 6px);
+  transform: translateY(-50%) scaleX(-1);
 }
 
 .opponent-box {
@@ -234,42 +308,153 @@ h1 {
   min-width: 0;
   padding: 16px 26px 16px 12px;
   color: #06245c;
-  font-family: "Bebas Neue", "Arial Narrow", Arial, sans-serif;
   font-size: 43px;
-  line-height: 1.02;
-  font-weight: 400;
+  line-height: 1.01;
+  font-weight: 700;
   text-align: center;
   text-transform: uppercase;
-  overflow-wrap: anywhere;
+  word-break: normal;
+  overflow-wrap: normal;
+  hyphens: none;
 }
 
-/*
- * Ab sechs Spielen wird die Karte automatisch kompakter.
- * So bleibt auch ein voller Spieltag auf einem 1080x1350-Slide nutzbar.
- */
-.matches:has(.match-card:nth-child(6)) {
-  gap: 10px;
-}
-
-.matches:has(.match-card:nth-child(6)) .match-card {
-  min-height: 130px;
-  grid-template-columns: 250px 275px 82px 1fr;
-}
-
-.matches:has(.match-card:nth-child(6)) .team-label {
-  min-height: 104px;
+.opponent-box--md {
   font-size: 39px;
 }
 
-.matches:has(.match-card:nth-child(6)) .time,
-.matches:has(.match-card:nth-child(6)) .score {
-  font-size: 78px;
-}
-
-.matches:has(.match-card:nth-child(6)) .time-label {
-  font-size: 39px;
-}
-
-.matches:has(.match-card:nth-child(6)) .opponent-box {
+.opponent-box--lg {
   font-size: 35px;
+}
+
+.opponent-box--xl {
+  font-size: 31px;
+}
+
+.opponent-box--xxl {
+  font-size: 28px;
+  line-height: 0.98;
+}
+
+/* Fünf Spiele: etwas kompakter, damit unten Luft bleibt. */
+.match-count-5 .meta-bar {
+  margin-bottom: 34px;
+}
+
+.match-count-5 .matches {
+  gap: 14px;
+}
+
+.match-count-5 .match-card {
+  height: 151px;
+}
+
+.match-count-5 .team-label {
+  font-size: 43px;
+}
+
+.match-count-5 .time {
+  font-size: 84px;
+}
+
+.match-count-5 .time-label {
+  font-size: 41px;
+}
+
+.match-count-5 .opponent-box {
+  font-size: 39px;
+}
+
+.match-count-5 .opponent-box--md {
+  font-size: 36px;
+}
+
+.match-count-5 .opponent-box--lg {
+  font-size: 33px;
+}
+
+.match-count-5 .opponent-box--xl {
+  font-size: 29px;
+}
+
+.match-count-5 .opponent-box--xxl {
+  font-size: 26px;
+}
+
+/* Sechs und mehr Spiele: nochmals kompakter. */
+.match-count-6 .slide-title,
+.match-count-7 .slide-title,
+.match-count-8 .slide-title,
+.match-count-9 .slide-title {
+  min-height: 174px;
+  font-size: 96px;
+  margin-bottom: 16px;
+}
+
+.match-count-6 .meta-bar,
+.match-count-7 .meta-bar,
+.match-count-8 .meta-bar,
+.match-count-9 .meta-bar {
+  min-height: 68px;
+  margin-bottom: 26px;
+}
+
+.match-count-6 .matches,
+.match-count-7 .matches,
+.match-count-8 .matches,
+.match-count-9 .matches {
+  gap: 9px;
+}
+
+.match-count-6 .match-card,
+.match-count-7 .match-card,
+.match-count-8 .match-card,
+.match-count-9 .match-card {
+  grid-template-columns: 250px 270px 82px minmax(0, 1fr);
+  height: 128px;
+}
+
+.match-count-6 .team-box,
+.match-count-7 .team-box,
+.match-count-8 .team-box,
+.match-count-9 .team-box {
+  padding-top: 9px;
+  padding-bottom: 9px;
+}
+
+.match-count-6 .team-label,
+.match-count-7 .team-label,
+.match-count-8 .team-label,
+.match-count-9 .team-label {
+  font-size: 37px;
+}
+
+.match-count-6 .time,
+.match-count-7 .time,
+.match-count-8 .time,
+.match-count-9 .time {
+  font-size: 72px;
+}
+
+.match-count-6 .time-label,
+.match-count-7 .time-label,
+.match-count-8 .time-label,
+.match-count-9 .time-label {
+  margin-top: 7px;
+  font-size: 34px;
+}
+
+.match-count-6 .vs-box span,
+.match-count-7 .vs-box span,
+.match-count-8 .vs-box span,
+.match-count-9 .vs-box span {
+  width: 54px;
+  height: 54px;
+  font-size: 25px;
+}
+
+.match-count-6 .opponent-box,
+.match-count-7 .opponent-box,
+.match-count-8 .opponent-box,
+.match-count-9 .opponent-box {
+  font-size: 32px;
 }

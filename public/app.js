@@ -31,6 +31,26 @@ function setStatus(message, type = "") {
   status.className = `status ${type}`.trim();
 }
 
+async function downloadPng(button, iframe, filename) {
+  const originalText = button.textContent;
+  button.disabled = true;
+  button.textContent = "PNG wird erstellt …";
+
+  try {
+    if (!iframe.contentWindow?.sghnmsDownloadSlidePng) {
+      throw new Error("Slide ist noch nicht vollständig geladen.");
+    }
+
+    await iframe.contentWindow.sghnmsDownloadSlidePng(filename);
+  } catch (error) {
+    console.error(error);
+    setStatus(error.message || "PNG konnte nicht erzeugt werden.", "error");
+  } finally {
+    button.disabled = false;
+    button.textContent = originalText;
+  }
+}
+
 function slideCard(slide, query) {
   const params = new URLSearchParams({
     ...query,
@@ -45,12 +65,20 @@ function slideCard(slide, query) {
         <h2>${escapeHtml(slide.title)}</h2>
         <p>${slide.meta.map(escapeHtml).join(" · ")}</p>
       </div>
-      <a class="download" href="/api/download-png?${params}">PNG herunterladen</a>
+      <button class="download" type="button">PNG herunterladen</button>
     </div>
     <div class="preview-wrap">
       <iframe title="${escapeHtml(slide.title)}" src="/slide?${params}"></iframe>
     </div>
   `;
+
+  const button = article.querySelector(".download");
+  const iframe = article.querySelector("iframe");
+
+  button.addEventListener("click", () => {
+    downloadPng(button, iframe, slide.filename);
+  });
+
   return article;
 }
 
