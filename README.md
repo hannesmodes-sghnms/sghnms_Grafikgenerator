@@ -1,19 +1,26 @@
-# SGHNMS Handball Social Generator
+# SGHNMS Handball Social Generator v6
 
-Erzeugt Spieltags- und Ergebnisgrafiken direkt aus `handball.net`.
+Erzeugt Spieltags- und Ergebnisgrafiken aus dem handball.net Vereins-Spielplan.
 
-## Funktionen
+## v6: feste Canva-Geometrie
 
-- Auswahl von Start- und Enddatum
-- Dropdown für **Spieltag** oder **Ergebnisse**
-- Gruppierung der Slides nach Datum und Ort
-- PNG-Download direkt im Browser
-- feste Designfläche in **1122 × 1402 px**
-- näher an der Canva-Vorlage durch eingebundene Original-Assets aus dem Export
+Diese Version arbeitet nicht mehr mit einem frei responsiven Slide-Layout. Die wesentlichen Elemente liegen auf festen Koordinaten der 1122 × 1402 Canva-Vorlage:
 
-## Assets
+- Headline: feste Box und feste Rotation
+- Meta-Bar: feste Position
+- Match-Stack: fester Startpunkt
+- Match-Card: Canva-Asset in Originalproportionen
+- bei mehreren Spielen wird die komplette Karte skaliert, nicht jede Spalte separat
 
-Bereits enthalten:
+Damit bleiben Teamfeld, Zeitblock, VS-Trenner und Gegnerblock proportional zusammen.
+
+## Designfarben
+
+- Trapez / Meta-Bar: `#001f44`
+- Ergebnis: `#bf0b0f`
+- Zeit: `#5f5f61`
+
+## Enthaltene Canva-Assets
 
 - `public/assets/canva/slide-bg.png`
 - `public/assets/canva/meta-bar.png`
@@ -22,26 +29,20 @@ Bereits enthalten:
 - `public/assets/canva/vs-divider.png`
 - `public/assets/canva/meta-dot.png`
 
-Optional bzw. empfohlen:
+## Eigene Assets
+
+Empfohlen / erwartet:
 
 - `public/assets/fonts/edo.ttf`
+- `public/assets/sghnms_images/sghnms_bg.png`
 
-Wenn `edo.ttf` nicht vorhanden ist, greift ein Fallback auf Bebas Neue / Systemschrift.
+Wenn `sghnms_bg.png` vorhanden ist, wird dieses als primärer Hintergrund verwendet. Das extrahierte Canva-Background dient als Fallback.
 
-## Installation
+## Start
 
 ```bash
 npm install
 npm start
 ```
 
-Server läuft dann standardmäßig auf Port `3000`.
-
-## Hinweise zu v5
-
-- clientseitiger PNG-Export bleibt erhalten, es wird **kein Playwright/Chromium-Export** benötigt.
-- Slide-Größe wurde auf die Canva-Vorlage **1122 × 1402 px** umgestellt.
-- Match-Karten, Meta-Bar, Team-Tag und VS-Element nutzen jetzt die exportierten Canva-Assets.
-- Ergebnis-Slides zeigen die Resultate in `#bf0b0f`.
-- Meta-Zeile zeigt bei Heimspielen weiter die Halle und bei Auswärtsspielen `AUSWÄRTS`.
-- Textblöcke auf Team- und Gegnerseite werden automatisch verkleinert, wenn Namen sonst überlaufen würden.
+Danach Port 3000 öffnen.

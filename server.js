@@ -390,6 +390,12 @@ function renderBrushTitle(title = "") {
     .join("");
 }
 
+function renderBreakableName(value = "") {
+  return escapeHtml(value)
+    .replaceAll("/", "/&#8203;")
+    .replaceAll("-", "-&#8203;");
+}
+
 function renderMatchCard(match, mode) {
   const center =
     mode === "results"
@@ -406,7 +412,7 @@ function renderMatchCard(match, mode) {
         </div>
         <div class="center-box">${center}</div>
         <div class="vs-box" aria-hidden="true"><span>VS</span></div>
-        <div class="opponent-box ${opponentClass} fit-text fit-text--opponent">${escapeHtml(match.opponent)}</div>
+        <div class="opponent-box ${opponentClass} fit-text fit-text--opponent">${renderBreakableName(match.opponent)}</div>
       </div>
     </div>
   `;
@@ -427,9 +433,8 @@ function renderSlideHtml(slide, mode) {
 <body>
   <div id="slide-root" class="slide mode-${escapeHtml(mode)} match-count-${matchCount}">
     <div class="slide-inner">
-      <div class="corner-brand">${escapeHtml(BRAND.clubName).replaceAll(" ", "<br>")}</div>
       <div class="title-wrap">
-        <h1 class="slide-title">${renderBrushTitle(slide.title)}</h1>
+        <h1 class="slide-title" data-title="${escapeHtml(slide.title)}">${renderBrushTitle(slide.title)}</h1>
       </div>
       <div class="meta-bar">${renderMeta(slide.meta)}</div>
       <div class="matches">${slide.matches.map((m) => renderMatchCard(m, mode)).join("")}</div>

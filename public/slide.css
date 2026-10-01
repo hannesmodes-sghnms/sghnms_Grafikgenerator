@@ -11,8 +11,8 @@
   --canvas-height: 1402px;
   --brand-blue: #001f44;
   --score-red: #bf0b0f;
-  --copy-blue: #0b2d67;
-  --copy-grey: #6c6c70;
+  --copy-blue: #0d2f69;
+  --copy-grey: #5f5f61;
 }
 
 * {
@@ -33,32 +33,63 @@ body {
 }
 
 .slide {
-  --card-scale: 1;
-  --card-gap: 18px;
+  --card-scale: 0.965;
+  --card-gap: 4px;
   position: relative;
   width: var(--canvas-width);
   height: var(--canvas-height);
   overflow: hidden;
   color: #fff;
   font-family: "Bebas Neue", "Arial Narrow", Arial, sans-serif;
-  background: #071f53 url("/assets/canva/slide-bg.png") center/cover no-repeat;
+  background-color: #071f53;
+  background-image:
+    url("/assets/sghnms_images/sghnms_bg.png"),
+    url("/assets/canva/slide-bg.png");
+  background-position: center, center;
+  background-repeat: no-repeat, no-repeat;
+  background-size: cover, cover;
   transform-origin: top left;
 }
 
-.match-count-6 {
-  --card-scale: 0.92;
-  --card-gap: 12px;
+.match-count-1,
+.match-count-2 {
+  --card-scale: 0.965;
+  --card-gap: 4px;
 }
 
-.match-count-7,
+.match-count-3 {
+  --card-scale: 0.925;
+  --card-gap: 4px;
+}
+
+.match-count-4 {
+  --card-scale: 0.885;
+  --card-gap: 4px;
+}
+
+.match-count-5 {
+  --card-scale: 0.845;
+  --card-gap: 4px;
+}
+
+.match-count-6 {
+  --card-scale: 0.755;
+  --card-gap: 2px;
+}
+
+.match-count-7 {
+  --card-scale: 0.685;
+  --card-gap: 2px;
+}
+
 .match-count-8 {
-  --card-scale: 0.84;
-  --card-gap: 10px;
+  --card-scale: 0.625;
+  --card-gap: 2px;
 }
 
 .match-count-9 {
-  --card-scale: 0.78;
-  --card-gap: 8px;
+  --card-scale: 0.575;
+  --card-gap: 1px;
 }
 
 .slide-inner {
@@ -66,44 +97,51 @@ body {
   z-index: 2;
   width: 100%;
   height: 100%;
-  padding: 42px 43px 38px;
 }
 
-.corner-brand {
-  position: absolute;
-  top: 48px;
-  left: 62px;
-  color: #fff;
-  font-size: 17px;
-  line-height: 1.02;
-  font-weight: 400;
-  letter-spacing: 0.015em;
-  text-transform: uppercase;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.16);
-}
-
+/*
+ * Headline-Geometrie aus der Canva-Referenz:
+ * feste Box, nicht vom Karten-Count abhängig.
+ */
 .title-wrap {
-  margin-top: 24px;
-  min-height: 122px;
+  position: absolute;
+  top: 118px;
+  left: 40px;
+  width: 1042px;
+  height: 182px;
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: visible;
 }
 
 .slide-title {
   margin: 0;
-  max-width: 980px;
+  max-width: 1010px;
   color: #fff;
   font-family: "Edo", "Bebas Neue", sans-serif;
-  font-size: 106px;
-  line-height: 0.92;
+  font-size: 122px;
+  line-height: 0.9;
   font-weight: 400;
-  letter-spacing: -0.005em;
+  letter-spacing: -0.01em;
   text-transform: uppercase;
   text-align: center;
   white-space: nowrap;
-  transform: rotate(-4.2deg) skewX(-8deg);
-  text-shadow: 5px 5px 0 rgba(0, 31, 68, 0.46);
+  transform: rotate(-3.95deg);
+  transform-origin: center center;
+  text-shadow: 4px 4px 0 rgba(0, 31, 68, 0.35);
+}
+
+.slide-title[data-title="HEIMSPIELE"] {
+  font-size: 128px;
+}
+
+.slide-title[data-title="ERGEBNISSE"] {
+  font-size: 128px;
+}
+
+.slide-title[data-title="AUSWÄRTSSPIELE"] {
+  font-size: 116px;
 }
 
 .edo-umlaut {
@@ -115,37 +153,44 @@ body {
 .edo-umlaut::after {
   content: "";
   position: absolute;
-  top: -0.12em;
-  width: 0.11em;
-  height: 0.11em;
+  top: -0.11em;
+  width: 0.10em;
+  height: 0.10em;
   border-radius: 2px;
   background: currentColor;
   transform: rotate(-18deg);
 }
 
-.edo-umlaut::before { left: 0.28em; }
+.edo-umlaut::before { left: 0.29em; }
 .edo-umlaut::after { left: 0.52em; }
 
+/*
+ * Meta-Bar: feste Position wie Canva.
+ * Das exportierte Asset liefert Rundung, Kontur und #001f44.
+ */
 .meta-bar {
-  position: relative;
-  width: 930px;
-  height: 109px;
-  margin: 18px auto 36px;
+  position: absolute;
+  top: 309px;
+  left: 107px;
+  width: 908px;
+  height: 106px;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 20px;
+  padding: 2px 40px 0;
   background: url("/assets/canva/meta-bar.png") center/100% 100% no-repeat;
 }
 
 .meta-part {
   color: #fff;
-  font-size: 38px;
+  font-size: 42px;
   line-height: 1;
   font-weight: 400;
-  letter-spacing: 0.012em;
+  letter-spacing: 0.008em;
   white-space: nowrap;
   text-transform: uppercase;
+  -webkit-text-stroke: 0.55px currentColor;
 }
 
 .meta-dot {
@@ -155,7 +200,15 @@ body {
   background: url("/assets/canva/meta-dot.png") center/contain no-repeat;
 }
 
+/*
+ * Karten starten immer an derselben Y-Position.
+ * Nur die gesamte Canva-Kartengruppe wird bei vielen Spielen skaliert.
+ */
 .matches {
+  position: absolute;
+  top: 439px;
+  left: 0;
+  width: 1122px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -166,6 +219,7 @@ body {
   position: relative;
   width: calc(1036px * var(--card-scale));
   height: calc(211px * var(--card-scale));
+  flex: 0 0 auto;
 }
 
 .match-card {
@@ -175,10 +229,9 @@ body {
   width: 1036px;
   height: 211px;
   display: grid;
-  grid-template-columns: 238px 236px 118px 1fr;
+  grid-template-columns: 270px 285px 115px minmax(0, 1fr);
   align-items: center;
-  column-gap: 10px;
-  padding: 0 24px 0 16px;
+  padding: 0 26px 0 16px;
   color: var(--copy-blue);
   background: url("/assets/canva/match-card.png") center/100% 100% no-repeat;
   transform: scale(var(--card-scale));
@@ -193,19 +246,20 @@ body {
 }
 
 .team-label {
-  width: 200px;
-  height: 136px;
+  width: 246px;
+  height: 166px;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 10px 16px 8px 18px;
+  padding: 12px 28px 8px 18px;
   background: url("/assets/canva/team-tag.png") center/100% 100% no-repeat;
   color: #fff;
-  font-size: 31px;
+  font-size: 52px;
   line-height: 0.94;
   font-weight: 400;
   text-align: center;
   text-transform: uppercase;
+  -webkit-text-stroke: 0.55px currentColor;
 }
 
 .center-box {
@@ -213,34 +267,37 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 170px;
+  min-height: 175px;
   text-align: center;
 }
 
 .time {
   color: var(--copy-grey);
-  font-size: 92px;
-  line-height: 0.84;
+  font-size: 116px;
+  line-height: 0.79;
   font-weight: 400;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.035em;
   white-space: nowrap;
+  -webkit-text-stroke: 0.35px currentColor;
 }
 
 .time-label {
-  margin-top: 2px;
+  margin-top: 10px;
   color: var(--copy-grey);
-  font-size: 42px;
-  line-height: 0.9;
+  font-size: 54px;
+  line-height: 0.8;
   font-weight: 400;
+  -webkit-text-stroke: 0.45px currentColor;
 }
 
 .score {
   color: var(--score-red);
-  font-size: 94px;
+  font-size: 116px;
   line-height: 0.82;
   font-weight: 400;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.035em;
   white-space: nowrap;
+  -webkit-text-stroke: 0.45px currentColor;
 }
 
 .score-separator {
@@ -260,48 +317,46 @@ body {
 }
 
 .vs-box span {
+  position: relative;
+  top: 1px;
   color: #fff;
-  font-size: 0;
+  font-size: 35px;
+  line-height: 1;
+  font-weight: 400;
+  -webkit-text-stroke: 0.35px currentColor;
 }
 
 .opponent-box {
   min-width: 0;
+  height: 176px;
   display: flex;
   align-items: center;
   justify-content: center;
-  align-self: stretch;
-  padding: 18px 6px 12px 0;
+  padding: 12px 5px 8px 0;
   color: var(--copy-blue);
-  font-size: 34px;
-  line-height: 0.97;
+  font-size: 48px;
+  line-height: 0.94;
   font-weight: 400;
   text-align: center;
   text-transform: uppercase;
-  word-break: keep-all;
-  overflow-wrap: break-word;
+  word-break: normal;
+  overflow-wrap: normal;
+  hyphens: none;
+  -webkit-text-stroke: 0.4px currentColor;
 }
 
-.opponent-box--md { font-size: 32px; }
-.opponent-box--lg { font-size: 29px; }
-.opponent-box--xl { font-size: 26px; }
-.opponent-box--xxl { font-size: 24px; }
+.opponent-box--md { font-size: 44px; }
+.opponent-box--lg { font-size: 41px; }
+.opponent-box--xl { font-size: 38px; }
+.opponent-box--xxl { font-size: 35px; }
 
-.match-count-1 .slide-title,
-.match-count-2 .slide-title { font-size: 112px; }
-.match-count-1 .team-label,
-.match-count-2 .team-label,
-.match-count-3 .team-label { font-size: 34px; }
-.match-count-1 .opponent-box,
-.match-count-2 .opponent-box { font-size: 36px; }
-
+/*
+ * Bei kompakten Slides wird die ganze Karte skaliert.
+ * Dadurch bleiben alle Proportionen wie in Canva erhalten.
+ */
+.match-count-6 .slide-title,
 .match-count-7 .slide-title,
 .match-count-8 .slide-title,
 .match-count-9 .slide-title {
-  font-size: 98px;
-}
-
-.match-count-7 .meta-bar,
-.match-count-8 .meta-bar,
-.match-count-9 .meta-bar {
-  margin-bottom: 28px;
+  font-size: 112px;
 }
