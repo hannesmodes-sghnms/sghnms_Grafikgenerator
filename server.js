@@ -14,25 +14,11 @@ const PORT = Number(process.env.PORT || 3000);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const PUBLIC_DIR = path.join(__dirname, "public");
-const BEBAS_FONT_DIR = path.join(
-  __dirname,
-  "node_modules",
-  "@fontsource",
-  "bebas-neue"
-);
-const HTML2CANVAS_DIR = path.join(
-  __dirname,
-  "node_modules",
-  "html2canvas",
-  "dist"
-);
+const BEBAS_FONT_DIR = path.join(__dirname, "node_modules", "@fontsource", "bebas-neue");
+const HTML2CANVAS_DIR = path.join(__dirname, "node_modules", "html2canvas", "dist");
 
 const app = express();
 
-/*
- * Bebas Neue wird über Fontsource installiert und lokal ausgeliefert.
- * Dadurch hängt der PNG-Renderer nicht von Google Fonts oder einem CDN ab.
- */
 app.use(
   "/vendor/bebas-neue",
   express.static(BEBAS_FONT_DIR, {
@@ -41,11 +27,6 @@ app.use(
   })
 );
 
-/*
- * PNG-Export läuft vollständig im Browser.
- * Dadurch brauchen wir auf dem Server weder Chromium noch
- * Linux-Systembibliotheken für Playwright.
- */
 app.use(
   "/vendor/html2canvas",
   express.static(HTML2CANVAS_DIR, {
@@ -126,9 +107,7 @@ async function getClientToken(forceRefresh = false) {
   }
 
   const html = await response.text();
-  const metaTag = html.match(
-    /<meta\b[^>]*name=["']client-token["'][^>]*>/i
-  )?.[0];
+  const metaTag = html.match(/<meta\b[^>]*name=["']client-token["'][^>]*>/i)?.[0];
   const token = metaTag?.match(/\bcontent=["']([^"']+)["']/i)?.[1];
 
   if (!token) {
@@ -167,22 +146,16 @@ async function fetchClubPage({ from, to, page, retry = true }) {
   try {
     errorJson = JSON.parse(errorText);
   } catch {
-    // response was not JSON
+    // not json
   }
 
-  if (
-    retry &&
-    response.status === 403 &&
-    errorJson?.code === "CLIENT_TOKEN_EXPIRED"
-  ) {
+  if (retry && response.status === 403 && errorJson?.code === "CLIENT_TOKEN_EXPIRED") {
     cachedClientToken = null;
     await getClientToken(true);
     return fetchClubPage({ from, to, page, retry: false });
   }
 
-  throw new Error(
-    `handball.net liefert HTTP ${response.status}: ${errorText.slice(0, 200)}`
-  );
+  throw new Error(`handball.net liefert HTTP ${response.status}: ${errorText.slice(0, 200)}`);
 }
 
 function berlinParts(isoDate) {
@@ -214,12 +187,7 @@ function berlinParts(isoDate) {
     timeZone: "Europe/Berlin"
   }).format(date);
 
-  return {
-    dateText,
-    weekday,
-    time,
-    isoLocal
-  };
+  return { dateText, weekday, time, isoLocal };
 }
 
 function normalizeMatch(raw) {
@@ -320,10 +288,7 @@ function ownTeam(match) {
 }
 
 function isFinished(match) {
-  return (
-    match.status.finished ||
-    (match.result.home !== null && match.result.away !== null)
-  );
+  return match.status.finished || (match.result.home !== null && match.result.away !== null);
 }
 
 function buildSlides(matches, mode) {
@@ -339,12 +304,18 @@ function buildSlides(matches, mode) {
     let title;
     let meta;
 
+    const shortVenue = venueLabel(match.venue.name);
+
     if (mode === "results") {
-      key = `results:${match.date}`;
+      if (perspective.isHome) {
+        key = `results:home:${match.date}:${shortVenue}`;
+        meta = [match.weekday, match.dateText, shortVenue];
+      } else {
+        key = `results:away:${match.date}`;
+        meta = [match.weekday, match.dateText, "AUSWÄRTS"];
+      }
       title = BRAND.resultsTitle;
-      meta = [match.weekday, match.dateText];
     } else if (perspective.isHome) {
-      const shortVenue = venueLabel(match.venue.name);
       key = `home:${match.date}:${shortVenue}`;
       title = BRAND.homeTitle;
       meta = [match.weekday, match.dateText, shortVenue];
@@ -372,7 +343,7 @@ function buildSlides(matches, mode) {
       isHome: perspective.isHome,
       ownScore: perspective.ownScore,
       opponentScore: perspective.opponentScore,
-      venue: venueLabel(match.venue.name)
+      venue: shortVenue
     });
   }
 
@@ -401,29 +372,19 @@ function renderMeta(meta) {
 
 function opponentSizeClass(name = "") {
   const length = String(name).trim().length;
-
-  if (length >= 38) return "opponent-box--xxl";
-  if (length >= 31) return "opponent-box--xl";
-  if (length >= 24) return "opponent-box--lg";
-  if (length >= 18) return "opponent-box--md";
+  if (length >= 42) return "opponent-box--xxl";
+  if (length >= 34) return "opponent-box--xl";
+  if (length >= 26) return "opponent-box--lg";
+  if (length >= 19) return "opponent-box--md";
   return "";
 }
 
 function renderBrushTitle(title = "") {
   return [...String(title).toUpperCase()]
     .map((character) => {
-      if (character === "Ä") {
-        return '<span class="edo-umlaut">A</span>';
-      }
-
-      if (character === "Ö") {
-        return '<span class="edo-umlaut">O</span>';
-      }
-
-      if (character === "Ü") {
-        return '<span class="edo-umlaut">U</span>';
-      }
-
+      if (character === "Ä") return '<span class="edo-umlaut">A</span>';
+      if (character === "Ö") return '<span class="edo-umlaut">O</span>';
+      if (character === "Ü") return '<span class="edo-umlaut">U</span>';
       return escapeHtml(character);
     })
     .join("");
@@ -438,13 +399,13 @@ function renderMatchCard(match, mode) {
   const opponentClass = opponentSizeClass(match.opponent);
 
   return `
-    <div class="match-card">
+    <div class="match-card ${mode === "results" ? "match-card--results" : ""}">
       <div class="team-box">
-        <div class="team-label">${escapeHtml(match.teamLabel)}</div>
+        <div class="team-label fit-text fit-text--team">${escapeHtml(match.teamLabel)}</div>
       </div>
       <div class="center-box">${center}</div>
       <div class="vs-box"><span>VS</span></div>
-      <div class="opponent-box ${opponentClass}">${escapeHtml(match.opponent)}</div>
+      <div class="opponent-box ${opponentClass} fit-text fit-text--opponent">${escapeHtml(match.opponent)}</div>
     </div>
   `;
 }
@@ -462,7 +423,7 @@ function renderSlideHtml(slide, mode) {
   <link rel="stylesheet" href="/slide.css">
 </head>
 <body>
-  <div id="slide-root" class="slide match-count-${matchCount}">
+  <div id="slide-root" class="slide mode-${escapeHtml(mode)} match-count-${matchCount}">
     <div class="slide-inner">
       <h1 class="slide-title">${renderBrushTitle(slide.title)}</h1>
       <div class="meta-bar">${renderMeta(slide.meta)}</div>
@@ -484,12 +445,47 @@ function renderSlideHtml(slide, mode) {
         document.body.style.height = (BASE_HEIGHT * scale) + "px";
       }
 
-      async function downloadSlidePng(filename) {
+      function shrinkToFit(element, { minSize = 24, step = 1 } = {}) {
+        const style = window.getComputedStyle(element);
+        let fontSize = parseFloat(style.fontSize);
+        let lineHeight = parseFloat(style.lineHeight);
+        if (!Number.isFinite(fontSize)) return;
+        if (!Number.isFinite(lineHeight)) {
+          lineHeight = fontSize * 0.95;
+        }
+
+        let guard = 0;
+        while (
+          guard < 100 &&
+          fontSize > minSize &&
+          (element.scrollWidth > element.clientWidth || element.scrollHeight > element.clientHeight)
+        ) {
+          fontSize -= step;
+          lineHeight = Math.max(fontSize * 0.94, minSize);
+          element.style.fontSize = fontSize + "px";
+          element.style.lineHeight = lineHeight + "px";
+          guard += 1;
+        }
+      }
+
+      function fitTextBlocks() {
+        document.querySelectorAll(".fit-text--team").forEach((element) => {
+          shrinkToFit(element, { minSize: 26, step: 1 });
+        });
+
+        document.querySelectorAll(".fit-text--opponent").forEach((element) => {
+          shrinkToFit(element, { minSize: 22, step: 1 });
+        });
+      }
+
+      async function renderSlideBlob() {
         if (!window.html2canvas) {
           throw new Error("PNG-Renderer konnte nicht geladen werden.");
         }
 
         await document.fonts.ready;
+        fitTextBlocks();
+        await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
 
         const oldTransform = slide.style.transform;
         const oldBodyWidth = document.body.style.width;
@@ -519,14 +515,7 @@ function renderSlideHtml(slide, mode) {
             }, "image/png");
           });
 
-          const url = URL.createObjectURL(blob);
-          const link = document.createElement("a");
-          link.href = url;
-          link.download = (filename || "sghnms-slide") + ".png";
-          document.body.appendChild(link);
-          link.click();
-          link.remove();
-          setTimeout(() => URL.revokeObjectURL(url), 1000);
+          return blob;
         } finally {
           slide.style.transform = oldTransform;
           document.body.style.width = oldBodyWidth;
@@ -535,10 +524,14 @@ function renderSlideHtml(slide, mode) {
         }
       }
 
-      window.sghnmsDownloadSlidePng = downloadSlidePng;
+      window.sghnmsRenderSlidePng = renderSlideBlob;
 
+      fitTextBlocks();
       fit();
-      window.addEventListener("resize", fit);
+      window.addEventListener("resize", () => {
+        fitTextBlocks();
+        fit();
+      });
     })();
   </script>
 </body>
@@ -560,7 +553,7 @@ function validateQuery(req, res) {
     return null;
   }
 
-  if (!['gameday', 'results'].includes(mode)) {
+  if (!["gameday", "results"].includes(mode)) {
     res.status(400).json({ error: "Ungültige Variante." });
     return null;
   }
@@ -605,7 +598,6 @@ app.get("/slide", async (req, res) => {
     res.status(500).send(error.message || "Slide konnte nicht erzeugt werden.");
   }
 });
-
 
 app.listen(PORT, () => {
   console.log(`Handball Social Generator läuft auf Port ${PORT}`);

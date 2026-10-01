@@ -1,31 +1,39 @@
-# SGHNMS Social Generator
+# SGHNMS Handball Social Generator
 
-Generator für Spieltags- und Ergebnisgrafiken aus der handball.net API.
+Erzeugt Spieltags- und Ergebnisgrafiken direkt aus `handball.net`.
 
-## Start
+## Funktionen
+
+- Auswahl von Start- und Enddatum
+- Dropdown für **Spieltag** oder **Ergebnisse**
+- Gruppierung der Slides nach Datum und Ort
+- PNG-Download direkt im Browser
+- 1080 × 1350 px für Instagram
+- lokale Fonts / lokales Background Image
+
+## Wichtige Asset-Pfade
+
+Diese Dateien müssen im Projekt vorhanden sein:
+
+- `public/assets/fonts/edo.ttf`
+- `public/assets/sghnms_images/sghnms_bg.png`
+
+Bebas Neue wird über `@fontsource/bebas-neue` lokal aus `node_modules` ausgeliefert.
+
+## Installation
 
 ```bash
 npm install
 npm start
 ```
 
-Danach Port 3000 öffnen.
+Server läuft dann standardmäßig auf Port `3000`.
 
-## Assets
+## Hinweise zu v4
 
-Diese Dateien werden erwartet und bleiben bewusst außerhalb des ZIPs, wenn sie nicht in ChatGPT hochgeladen wurden:
-
-```text
-public/assets/sghnms_images/sghnms_bg.png
-public/assets/fonts/edo.ttf
-```
-
-Bebas Neue wird lokal über `@fontsource/bebas-neue` ausgeliefert.
-
-## PNG-Export
-
-Der PNG-Export läuft ab Version 0.3.0 direkt im Browser über `html2canvas`.
-Dadurch ist kein Playwright/Chromium mehr nötig und es müssen keine zusätzlichen
-Linux-Bibliotheken im Codespace installiert werden.
-
-Die Ausgabegröße bleibt 1080 x 1350 Pixel.
+- PNG-Download wird jetzt **im Hauptfenster** ausgelöst, nicht mehr aus dem eingebetteten Preview-Frame.
+- Ergebnis-Slides bekommen jetzt einen dritten Meta-Punkt:
+  - bei Heimspielen die Halle (`PESTA`, `KSV-HALLE`, ...)
+  - bei Auswärtsspielen `AUSWÄRTS`
+- Ergebniszahlen werden in `#bf0b0f` ausgegeben.
+- Textblöcke auf den Karten schrumpfen automatisch, wenn lange Gegnernamen sonst überlaufen würden.

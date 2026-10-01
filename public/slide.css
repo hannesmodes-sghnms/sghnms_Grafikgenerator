@@ -1,13 +1,3 @@
-/*
- * SG Handball Neumünster – Social Slides
- * 1080 x 1350 px / Instagram 4:5
- *
- * Assets:
- * - Background: /assets/sghnms_images/sghnms_bg.png
- * - Brush Headline: /assets/fonts/edo.ttf
- * - Rest: Bebas Neue via lokalem Fontsource-Paket
- */
-
 @font-face {
   font-family: "Edo";
   src: url("/assets/fonts/edo.ttf") format("truetype");
@@ -52,33 +42,30 @@ body {
   position: relative;
   z-index: 2;
   height: 100%;
-  padding: 66px 58px 48px;
+  padding: 34px 50px 38px;
 }
 
 .slide-title {
-  margin: 0 auto 24px;
-  min-height: 192px;
-  max-width: 970px;
+  margin: 0 auto 18px;
+  max-width: 940px;
+  min-height: 162px;
   display: flex;
   align-items: center;
   justify-content: center;
   text-align: center;
   white-space: nowrap;
   font-family: "Edo", "Bebas Neue", cursive;
-  font-size: 106px;
-  line-height: 0.86;
+  font-size: 95px;
+  line-height: 0.88;
   font-weight: 400;
-  letter-spacing: -0.015em;
+  letter-spacing: -0.012em;
   text-transform: uppercase;
   color: #fff;
-  text-shadow: 2px 3px 0 rgba(0, 0, 0, 0.1);
+  text-shadow: 2px 3px 0 rgba(0, 0, 0, 0.12);
+  transform: rotate(-2.2deg);
+  transform-origin: center center;
 }
 
-/*
- * Edo enthält in manchen Fassungen kein Ä/Ö/Ü.
- * Die Punkte werden deshalb separat gezeichnet, damit AUSWÄRTSSPIELE
- * nicht als "AUSW RTSSPIELE" auseinanderfällt.
- */
 .edo-umlaut {
   position: relative;
   display: inline-block;
@@ -88,42 +75,42 @@ body {
 .edo-umlaut::after {
   content: "";
   position: absolute;
-  top: -0.12em;
+  top: -0.10em;
   width: 0.10em;
   height: 0.10em;
   border-radius: 2px;
   background: currentColor;
-  transform: rotate(-18deg);
+  transform: rotate(-19deg);
 }
 
 .edo-umlaut::before {
-  left: 0.28em;
+  left: 0.30em;
 }
 
 .edo-umlaut::after {
-  left: 0.52em;
+  left: 0.53em;
 }
 
 .meta-bar {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 21px;
-  width: 890px;
-  min-height: 76px;
-  margin: 0 auto 42px;
-  padding: 8px 32px 7px;
-  border: 3px solid rgba(255, 255, 255, 0.95);
+  gap: 19px;
+  width: 892px;
+  min-height: 78px;
+  margin: 0 auto 34px;
+  padding: 9px 34px 7px;
+  border: 4px solid rgba(255, 255, 255, 0.96);
   border-radius: 999px;
-  background: #001441;
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.15);
+  background: #001653;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
 }
 
 .meta-part {
   font-size: 38px;
   line-height: 1;
-  font-weight: 700;
-  letter-spacing: 0.01em;
+  font-weight: 400;
+  letter-spacing: 0.015em;
   white-space: nowrap;
 }
 
@@ -138,18 +125,18 @@ body {
 .matches {
   display: flex;
   flex-direction: column;
-  gap: 17px;
+  gap: 15px;
 }
 
 .match-card {
   display: grid;
-  grid-template-columns: 276px 286px 96px minmax(0, 1fr);
-  height: 164px;
+  grid-template-columns: 280px 260px 104px minmax(0, 1fr);
+  height: 150px;
   overflow: hidden;
-  border-radius: 17px;
+  border-radius: 18px;
   background: rgba(255, 255, 255, 0.985);
   color: #001441;
-  box-shadow: 0 4px 13px rgba(0, 0, 0, 0.16);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.14);
 }
 
 .team-box {
@@ -162,18 +149,19 @@ body {
 .team-label {
   position: relative;
   isolation: isolate;
-  width: calc(100% - 34px);
+  width: calc(100% - 48px);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 14px 10px 14px 14px;
-  background: #001441;
+  padding: 12px 12px 12px 18px;
+  background: #001a62;
   color: #fff;
-  font-size: 46px;
-  font-weight: 700;
-  line-height: 0.98;
+  font-size: 44px;
+  font-weight: 400;
+  line-height: 0.92;
   text-align: center;
   text-transform: uppercase;
+  overflow: hidden;
 }
 
 .team-label::after {
@@ -182,27 +170,27 @@ body {
   z-index: -1;
   top: 0;
   bottom: 0;
-  right: -28px;
-  width: 58px;
-  background: #001441;
-  transform: skewX(-14deg);
+  right: -36px;
+  width: 72px;
+  background: #001a62;
+  transform: skewX(-17deg);
   transform-origin: bottom;
 }
 
 .team-label::before {
   content: "";
   position: absolute;
-  right: -20px;
-  bottom: 6px;
-  width: 24px;
-  height: 32px;
-  opacity: 0.35;
+  right: 10px;
+  bottom: 8px;
+  width: 28px;
+  height: 34px;
+  opacity: 0.28;
   background: repeating-linear-gradient(
     135deg,
-    rgba(255,255,255,0.45) 0 2px,
+    rgba(255,255,255,0.42) 0 2px,
     transparent 2px 7px
   );
-  transform: skewX(-14deg);
+  clip-path: polygon(0 100%, 100% 0, 100% 100%);
 }
 
 .center-box {
@@ -210,35 +198,39 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 6px 4px;
-  color: #626262;
+  padding: 8px 4px;
+  color: #6b6b6b;
   text-align: center;
 }
 
 .time {
-  font-size: 91px;
-  line-height: 0.82;
-  font-weight: 700;
-  letter-spacing: -0.025em;
+  font-size: 88px;
+  line-height: 0.80;
+  font-weight: 400;
+  letter-spacing: -0.03em;
   white-space: nowrap;
 }
 
 .time-label {
-  margin-top: 11px;
-  font-size: 44px;
+  margin-top: 10px;
+  font-size: 40px;
   line-height: 0.84;
-  font-weight: 700;
+  font-weight: 400;
 }
 
 .score {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 7px;
   font-size: 84px;
-  line-height: 0.9;
-  font-weight: 700;
+  line-height: 0.88;
+  font-weight: 400;
   white-space: nowrap;
+}
+
+.slide.mode-results .score {
+  color: #bf0b0f;
 }
 
 .score-separator {
@@ -255,12 +247,12 @@ body {
 .vs-box::before {
   content: "";
   position: absolute;
-  top: 17px;
-  bottom: 17px;
+  top: 16px;
+  bottom: 16px;
   left: 50%;
   width: 2px;
   transform: translateX(-50%);
-  background: #cbd1db;
+  background: #cdd3df;
 }
 
 .vs-box span {
@@ -268,14 +260,14 @@ body {
   z-index: 2;
   display: grid;
   place-items: center;
-  width: 62px;
-  height: 62px;
+  width: 60px;
+  height: 60px;
   border-radius: 50%;
-  background: #001441;
+  background: #001a62;
   color: #fff;
-  font-size: 29px;
+  font-size: 28px;
   line-height: 1;
-  font-weight: 700;
+  font-weight: 400;
 }
 
 .vs-box span::before,
@@ -283,21 +275,21 @@ body {
   content: "";
   position: absolute;
   top: 50%;
-  width: 22px;
+  width: 24px;
   height: 12px;
   transform: translateY(-50%);
   background:
-    linear-gradient(#001441, #001441) 0 0 / 18px 2px no-repeat,
-    linear-gradient(#001441, #001441) 4px 5px / 14px 2px no-repeat,
-    linear-gradient(#001441, #001441) 8px 10px / 10px 2px no-repeat;
+    linear-gradient(#001a62, #001a62) 0 0 / 18px 2px no-repeat,
+    linear-gradient(#001a62, #001a62) 4px 5px / 14px 2px no-repeat,
+    linear-gradient(#001a62, #001a62) 8px 10px / 10px 2px no-repeat;
 }
 
 .vs-box span::before {
-  right: calc(100% + 6px);
+  right: calc(100% + 7px);
 }
 
 .vs-box span::after {
-  left: calc(100% + 6px);
+  left: calc(100% + 7px);
   transform: translateY(-50%) scaleX(-1);
 }
 
@@ -306,155 +298,104 @@ body {
   align-items: center;
   justify-content: center;
   min-width: 0;
-  padding: 16px 26px 16px 12px;
+  padding: 12px 24px 12px 12px;
   color: #06245c;
-  font-size: 43px;
-  line-height: 1.01;
-  font-weight: 700;
+  font-size: 44px;
+  line-height: 0.96;
+  font-weight: 400;
   text-align: center;
   text-transform: uppercase;
   word-break: normal;
-  overflow-wrap: normal;
-  hyphens: none;
+  overflow-wrap: anywhere;
+  hyphens: manual;
 }
 
-.opponent-box--md {
-  font-size: 39px;
+.opponent-box--md { font-size: 40px; }
+.opponent-box--lg { font-size: 36px; }
+.opponent-box--xl { font-size: 33px; }
+.opponent-box--xxl { font-size: 30px; }
+
+.match-count-1 .match-card,
+.match-count-2 .match-card {
+  height: 180px;
 }
 
-.opponent-box--lg {
-  font-size: 35px;
+.match-count-1 .matches,
+.match-count-2 .matches {
+  gap: 18px;
 }
 
-.opponent-box--xl {
-  font-size: 31px;
+.match-count-1 .team-label,
+.match-count-2 .team-label {
+  font-size: 48px;
 }
 
-.opponent-box--xxl {
-  font-size: 28px;
-  line-height: 0.98;
+.match-count-1 .time,
+.match-count-2 .time {
+  font-size: 96px;
 }
 
-/* Fünf Spiele: etwas kompakter, damit unten Luft bleibt. */
-.match-count-5 .meta-bar {
-  margin-bottom: 34px;
+.match-count-1 .opponent-box,
+.match-count-2 .opponent-box {
+  font-size: 46px;
 }
 
-.match-count-5 .matches {
-  gap: 14px;
+.match-count-5 .match-card,
+.match-count-6 .match-card {
+  height: 150px;
 }
 
-.match-count-5 .match-card {
-  height: 151px;
-}
-
-.match-count-5 .team-label {
-  font-size: 43px;
-}
-
-.match-count-5 .time {
-  font-size: 84px;
-}
-
-.match-count-5 .time-label {
-  font-size: 41px;
-}
-
-.match-count-5 .opponent-box {
-  font-size: 39px;
-}
-
-.match-count-5 .opponent-box--md {
-  font-size: 36px;
-}
-
-.match-count-5 .opponent-box--lg {
-  font-size: 33px;
-}
-
-.match-count-5 .opponent-box--xl {
-  font-size: 29px;
-}
-
-.match-count-5 .opponent-box--xxl {
-  font-size: 26px;
-}
-
-/* Sechs und mehr Spiele: nochmals kompakter. */
-.match-count-6 .slide-title,
 .match-count-7 .slide-title,
 .match-count-8 .slide-title,
 .match-count-9 .slide-title {
-  min-height: 174px;
-  font-size: 96px;
-  margin-bottom: 16px;
+  min-height: 146px;
+  font-size: 90px;
 }
 
-.match-count-6 .meta-bar,
 .match-count-7 .meta-bar,
 .match-count-8 .meta-bar,
 .match-count-9 .meta-bar {
-  min-height: 68px;
-  margin-bottom: 26px;
+  margin-bottom: 28px;
 }
 
-.match-count-6 .matches,
-.match-count-7 .matches,
-.match-count-8 .matches,
-.match-count-9 .matches {
-  gap: 9px;
-}
-
-.match-count-6 .match-card,
 .match-count-7 .match-card,
 .match-count-8 .match-card,
 .match-count-9 .match-card {
-  grid-template-columns: 250px 270px 82px minmax(0, 1fr);
   height: 128px;
 }
 
-.match-count-6 .team-box,
-.match-count-7 .team-box,
-.match-count-8 .team-box,
-.match-count-9 .team-box {
-  padding-top: 9px;
-  padding-bottom: 9px;
+.match-count-7 .matches,
+.match-count-8 .matches,
+.match-count-9 .matches {
+  gap: 11px;
 }
 
-.match-count-6 .team-label,
 .match-count-7 .team-label,
 .match-count-8 .team-label,
 .match-count-9 .team-label {
-  font-size: 37px;
+  font-size: 38px;
 }
 
-.match-count-6 .time,
 .match-count-7 .time,
 .match-count-8 .time,
 .match-count-9 .time {
-  font-size: 72px;
+  font-size: 76px;
 }
 
-.match-count-6 .time-label,
 .match-count-7 .time-label,
 .match-count-8 .time-label,
 .match-count-9 .time-label {
-  margin-top: 7px;
   font-size: 34px;
 }
 
-.match-count-6 .vs-box span,
-.match-count-7 .vs-box span,
-.match-count-8 .vs-box span,
-.match-count-9 .vs-box span {
-  width: 54px;
-  height: 54px;
-  font-size: 25px;
+.match-count-7 .score,
+.match-count-8 .score,
+.match-count-9 .score {
+  font-size: 74px;
 }
 
-.match-count-6 .opponent-box,
 .match-count-7 .opponent-box,
 .match-count-8 .opponent-box,
 .match-count-9 .opponent-box {
-  font-size: 32px;
+  font-size: 36px;
 }

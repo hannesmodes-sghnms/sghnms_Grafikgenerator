@@ -37,11 +37,25 @@ async function downloadPng(button, iframe, filename) {
   button.textContent = "PNG wird erstellt …";
 
   try {
-    if (!iframe.contentWindow?.sghnmsDownloadSlidePng) {
+    const renderer = iframe.contentWindow?.sghnmsRenderSlidePng;
+    if (!renderer) {
       throw new Error("Slide ist noch nicht vollständig geladen.");
     }
 
-    await iframe.contentWindow.sghnmsDownloadSlidePng(filename);
+    const blob = await renderer();
+    if (!(blob instanceof Blob)) {
+      throw new Error("PNG konnte nicht erzeugt werden.");
+    }
+
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${filename || "sghnms-slide"}.png`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+    setStatus(`Download gestartet: ${filename}.png`, "success");
   } catch (error) {
     console.error(error);
     setStatus(error.message || "PNG konnte nicht erzeugt werden.", "error");
