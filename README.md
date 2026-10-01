@@ -46,3 +46,7 @@ npm start
 ```
 
 Danach Port 3000 öffnen.
+
+## Font-Fix v7
+
+Bebas Neue wird nicht mehr über `@fontsource` eingebunden. Die Slide-HTML lädt die Schrift ausschließlich über `@font-face` aus `public/assets/fonts/`. Dadurch kann im Browser unter **Rendered Fonts** eindeutig `Bebas Neue` geprüft werden.

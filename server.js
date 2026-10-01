@@ -14,18 +14,9 @@ const PORT = Number(process.env.PORT || 3000);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const PUBLIC_DIR = path.join(__dirname, "public");
-const BEBAS_FONT_DIR = path.join(__dirname, "node_modules", "@fontsource", "bebas-neue");
 const HTML2CANVAS_DIR = path.join(__dirname, "node_modules", "html2canvas", "dist");
 
 const app = express();
-
-app.use(
-  "/vendor/bebas-neue",
-  express.static(BEBAS_FONT_DIR, {
-    maxAge: "1y",
-    immutable: true
-  })
-);
 
 app.use(
   "/vendor/html2canvas",
@@ -427,7 +418,6 @@ function renderSlideHtml(slide, mode) {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>${escapeHtml(slide.title)}</title>
-  <link rel="stylesheet" href="/vendor/bebas-neue/400.css">
   <link rel="stylesheet" href="/slide.css">
 </head>
 <body>

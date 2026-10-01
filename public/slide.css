@@ -3,7 +3,19 @@
   src: url("/assets/fonts/edo.ttf") format("truetype");
   font-style: normal;
   font-weight: 400;
-  font-display: swap;
+  font-display: block;
+}
+
+@font-face {
+  font-family: "Bebas Neue";
+  src:
+    url("/assets/fonts/BebasNeue-Regular.woff2") format("woff2"),
+    url("/assets/fonts/BebasNeue-Regular.woff") format("woff"),
+    url("/assets/fonts/BebasNeue-Regular.ttf") format("truetype"),
+    url("/assets/fonts/BebasNeue-Regular.otf") format("opentype");
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
 }
 
 :root {
@@ -40,7 +52,7 @@ body {
   height: var(--canvas-height);
   overflow: hidden;
   color: #fff;
-  font-family: "Bebas Neue", "Arial Narrow", Arial, sans-serif;
+  font-family: "Bebas Neue", sans-serif;
   background-color: #071f53;
   background-image:
     url("/assets/sghnms_images/sghnms_bg.png"),
