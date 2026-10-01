@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SGHNMS Social Generator</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <main class="page">
+    <header class="hero">
+      <div class="eyebrow">SG HANDBALL NEUMÜNSTER</div>
+      <h1>Social Generator</h1>
+      <p>Spieltags- und Ergebnisgrafiken direkt aus handball.net erzeugen.</p>
+    </header>
+
+    <section class="controls-card">
+      <form id="generator-form" class="controls">
+        <label>
+          <span>Startdatum</span>
+          <input id="from" type="date" required>
+        </label>
+
+        <label>
+          <span>Enddatum</span>
+          <input id="to" type="date" required>
+        </label>
+
+        <label>
+          <span>Variante</span>
+          <select id="mode">
+            <option value="gameday">Spieltag</option>
+            <option value="results">Ergebnisse</option>
+          </select>
+        </label>
+
+        <button type="submit">Slides generieren</button>
+      </form>
+    </section>
+
+    <div id="status" class="status">Zeitraum auswählen und Slides generieren.</div>
+    <section id="slides" class="slides"></section>
+  </main>
+
+  <script src="/app.js" defer></script>
+</body>
+</html>
