@@ -1,6 +1,6 @@
 # SGHNMS Handball Social Generator
 
-Initialer MVP für automatische Instagram-Spieltag- und Ergebnisgrafiken auf Basis der handball.net API.
+Standalone-Generator fuer Instagram-Spieltag- und Ergebnisgrafiken auf Basis der handball.net API.
 
 ## Start
 
@@ -9,24 +9,48 @@ npm install
 npm start
 ```
 
-Danach Port 3000 öffnen.
+Danach Port `3000` im Browser oeffnen.
 
-## Funktionen
+## Bedienung
 
-- Start- und Enddatum
-- Dropdown `Spieltag` / `Ergebnisse`
-- automatische Gruppierung in Heim- und Auswärtsslides
-- Heimspiele zusätzlich nach Halle gruppiert
-- Ergebnis-Slides nach Datum gruppiert
-- Preview im Browser
-- PNG-Download pro Slide via Playwright
-- 5 Minuten API-Cache
+Auf der Generator-Seite:
 
-## Wichtige Dateien
+- Startdatum waehlen
+- Enddatum waehlen
+- `Spieltag` oder `Ergebnisse` waehlen
+- Slides generieren
+- jede Grafik per `PNG herunterladen` als 1080 x 1350 px exportieren
 
-- `config.js`: Team- und Hallen-Mapping
-- `server.js`: handball.net API, Slide-Logik und PNG-Export
-- `public/slide.css`: Layout der Social-Grafik
-- `public/styles.css`: Generator-Oberfläche
+## Background
 
-Die Initialversion nutzt einen CSS-Hintergrund. Der exakte Vereins-Hintergrund kann als nächster Schritt eingebaut werden.
+Das eigentliche SGHNMS-Hintergrundbild wird erwartet unter:
+
+```text
+public/assets/sghnms_images/sghnms_bg.png
+```
+
+Empfohlen: `1080 x 1350 px`.
+
+## Fonts
+
+### Bebas Neue
+
+Bebas Neue wird ueber `@fontsource/bebas-neue` als npm-Abhaengigkeit installiert und vom eigenen Node-Server ausgeliefert. Es gibt keine Abhaengigkeit zu Google Fonts oder zur SGHNMS-Website.
+
+### Edo
+
+Die Brush-Headline verwendet `Edo`. Bitte die von dir verwendete Fontdatei lokal ablegen als:
+
+```text
+public/assets/fonts/edo.ttf
+```
+
+Die Fontdatei ist nicht Bestandteil des Repositories/ZIPs.
+
+## PNG Rendering
+
+Der Export erfolgt mit Playwright/Chromium. Vor dem Screenshot wartet der Renderer auf `document.fonts.ready`, damit der Export nicht versehentlich mit Fallback-Fonts erzeugt wird.
+
+## Cache
+
+handball.net API-Daten werden derzeit fuer 5 Minuten im Speicher gecacht.

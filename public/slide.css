@@ -1,3 +1,23 @@
+/*
+ * SG Handball Neumünster – Social Slides
+ * Ausgabeformat: 1080 x 1350 px (Instagram 4:5)
+ *
+ * Fonts:
+ * - Headline: Edo (lokal unter /assets/fonts/edo.ttf)
+ * - Rest: Bebas Neue (Fontsource / npm)
+ */
+
+@font-face {
+  font-family: "Edo";
+  src:
+    local("Edo"),
+    local("Edo SZ"),
+    url("/assets/fonts/edo.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -22,74 +42,43 @@ body {
   transform-origin: top left;
   overflow: hidden;
   color: #fff;
-  font-family: "Arial Narrow", Arial, sans-serif;
-  background:
-    radial-gradient(circle at 82% 24%, rgba(0, 92, 255, 0.36), transparent 25%),
-    radial-gradient(circle at 18% 78%, rgba(0, 92, 255, 0.24), transparent 22%),
-    linear-gradient(150deg, rgba(216, 16, 23, 0.95) 0 4%, transparent 4.2% 9%, rgba(255,255,255,0.95) 9.2% 12%, transparent 12.2%),
-    linear-gradient(330deg, rgba(216, 16, 23, 0.95) 0 4%, transparent 4.2% 9%, rgba(255,255,255,0.95) 9.2% 12%, transparent 12.2%),
-    linear-gradient(180deg, #06215a 0%, #00133d 100%);
-}
+  font-family: "Bebas Neue", "Arial Narrow", Arial, sans-serif;
 
-.slide::before,
-.slide::after {
-  content: "";
-  position: absolute;
-  width: 390px;
-  height: 150px;
-  background: radial-gradient(circle, rgba(18, 100, 255, 0.9) 0 5px, transparent 6px);
-  background-size: 22px 22px;
-  opacity: 0.55;
-  transform: rotate(-10deg);
-}
-
-.slide::before {
-  top: 84px;
-  right: 32px;
-}
-
-.slide::after {
-  left: 16px;
-  bottom: 72px;
+  /*
+   * Das eigentliche SGHNMS-Background-Asset.
+   * Falls die Datei noch fehlt, bleibt ein dunkelblauer Fallback sichtbar.
+   */
+  background-color: #031947;
+  background-image: url("/assets/sghnms_images/sghnms_bg.png");
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: cover;
 }
 
 .slide-inner {
   position: relative;
   z-index: 2;
   height: 100%;
-  padding: 72px 58px 54px;
-}
-
-.brand-mark {
-  position: absolute;
-  top: 170px;
-  right: 58px;
-  width: 260px;
-  height: 260px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 16px solid rgba(255,255,255,0.08);
-  border-radius: 50%;
-  color: rgba(255,255,255,0.08);
-  font-size: 24px;
-  font-weight: 900;
-  text-align: center;
-  transform: rotate(-8deg);
+  padding: 66px 58px 54px;
 }
 
 h1 {
   position: relative;
   z-index: 2;
-  margin: 0 0 25px;
+  margin: 0 0 24px;
+  min-height: 175px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   text-align: center;
-  font-size: 88px;
-  line-height: 0.96;
-  font-weight: 1000;
-  letter-spacing: 0.01em;
+  font-family: "Edo", "Bebas Neue", cursive;
+  font-size: 104px;
+  line-height: 0.9;
+  font-weight: 400;
+  letter-spacing: 0;
   text-transform: uppercase;
-  font-style: italic;
-  text-shadow: 2px 2px 0 rgba(0,0,0,0.12);
+  color: #fff;
+  text-shadow: 2px 3px 0 rgba(0, 0, 0, 0.13);
 }
 
 .meta-bar {
@@ -98,22 +87,24 @@ h1 {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 18px;
+  gap: 19px;
   min-height: 74px;
-  padding: 10px 34px;
+  padding: 8px 34px 7px;
   margin: 0 auto 44px;
   width: fit-content;
   max-width: 900px;
-  border: 3px solid rgba(255,255,255,0.82);
+  border: 3px solid rgba(255, 255, 255, 0.88);
   border-radius: 999px;
   background: #001441;
-  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.25);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.2);
 }
 
 .meta-part {
-  font-size: 29px;
+  font-family: "Bebas Neue", "Arial Narrow", Arial, sans-serif;
+  font-size: 38px;
   line-height: 1;
-  font-weight: 900;
+  font-weight: 400;
+  letter-spacing: 0.01em;
   white-space: nowrap;
 }
 
@@ -139,9 +130,9 @@ h1 {
   min-height: 155px;
   overflow: hidden;
   border-radius: 17px;
-  background: rgba(255,255,255,0.97);
+  background: rgba(255, 255, 255, 0.98);
   color: #001441;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
 }
 
 .team-box {
@@ -160,10 +151,11 @@ h1 {
   padding: 16px 34px 16px 18px;
   clip-path: polygon(0 0, 100% 0, 84% 100%, 0 100%);
   background: #001441;
-  color: white;
-  font-size: 39px;
-  font-weight: 1000;
-  line-height: 1.03;
+  color: #fff;
+  font-family: "Bebas Neue", "Arial Narrow", Arial, sans-serif;
+  font-size: 46px;
+  font-weight: 400;
+  line-height: 1;
   text-align: center;
   text-transform: uppercase;
 }
@@ -175,14 +167,15 @@ h1 {
   justify-content: center;
   padding: 6px 8px;
   color: #606060;
+  font-family: "Bebas Neue", "Arial Narrow", Arial, sans-serif;
 }
 
 .time,
 .score {
-  font-size: 82px;
-  line-height: 0.88;
-  font-weight: 1000;
-  letter-spacing: -0.045em;
+  font-size: 94px;
+  line-height: 0.86;
+  font-weight: 400;
+  letter-spacing: -0.025em;
 }
 
 .score {
@@ -196,10 +189,10 @@ h1 {
 }
 
 .time-label {
-  margin-top: 9px;
-  font-size: 34px;
-  line-height: 1;
-  font-weight: 900;
+  margin-top: 10px;
+  font-size: 48px;
+  line-height: 0.9;
+  font-weight: 400;
 }
 
 .vs-box {
@@ -227,9 +220,11 @@ h1 {
   height: 64px;
   border-radius: 50%;
   background: #001441;
-  color: white;
-  font-size: 25px;
-  font-weight: 1000;
+  color: #fff;
+  font-family: "Bebas Neue", "Arial Narrow", Arial, sans-serif;
+  font-size: 31px;
+  line-height: 1;
+  font-weight: 400;
 }
 
 .opponent-box {
@@ -239,9 +234,10 @@ h1 {
   min-width: 0;
   padding: 16px 26px 16px 12px;
   color: #06245c;
-  font-size: 34px;
-  line-height: 1.05;
-  font-weight: 1000;
+  font-family: "Bebas Neue", "Arial Narrow", Arial, sans-serif;
+  font-size: 43px;
+  line-height: 1.02;
+  font-weight: 400;
   text-align: center;
   text-transform: uppercase;
   overflow-wrap: anywhere;
@@ -249,7 +245,7 @@ h1 {
 
 /*
  * Ab sechs Spielen wird die Karte automatisch kompakter.
- * Damit bleibt auch ein voller Sonntag auf einem 1080x1350 Slide nutzbar.
+ * So bleibt auch ein voller Spieltag auf einem 1080x1350-Slide nutzbar.
  */
 .matches:has(.match-card:nth-child(6)) {
   gap: 10px;
@@ -262,15 +258,18 @@ h1 {
 
 .matches:has(.match-card:nth-child(6)) .team-label {
   min-height: 104px;
-  font-size: 32px;
+  font-size: 39px;
 }
 
 .matches:has(.match-card:nth-child(6)) .time,
 .matches:has(.match-card:nth-child(6)) .score {
-  font-size: 68px;
+  font-size: 78px;
 }
 
-.matches:has(.match-card:nth-child(6)) .time-label,
+.matches:has(.match-card:nth-child(6)) .time-label {
+  font-size: 39px;
+}
+
 .matches:has(.match-card:nth-child(6)) .opponent-box {
-  font-size: 28px;
+  font-size: 35px;
 }

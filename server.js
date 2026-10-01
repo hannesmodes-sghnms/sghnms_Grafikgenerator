@@ -15,8 +15,27 @@ const PORT = Number(process.env.PORT || 3000);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const PUBLIC_DIR = path.join(__dirname, "public");
+const BEBAS_FONT_DIR = path.join(
+  __dirname,
+  "node_modules",
+  "@fontsource",
+  "bebas-neue"
+);
 
 const app = express();
+
+/*
+ * Bebas Neue wird über Fontsource installiert und lokal ausgeliefert.
+ * Dadurch hängt der PNG-Renderer nicht von Google Fonts oder einem CDN ab.
+ */
+app.use(
+  "/vendor/bebas-neue",
+  express.static(BEBAS_FONT_DIR, {
+    maxAge: "1y",
+    immutable: true
+  })
+);
+
 app.use(express.static(PUBLIC_DIR));
 
 const cache = new Map();
@@ -387,12 +406,12 @@ function renderSlideHtml(slide, mode) {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>${escapeHtml(slide.title)}</title>
+  <link rel="stylesheet" href="/vendor/bebas-neue/400.css">
   <link rel="stylesheet" href="/slide.css">
 </head>
 <body>
   <div id="slide-root" class="slide">
     <div class="slide-inner">
-      <div class="brand-mark">SG HANDBALL<br>NEUMÜNSTER</div>
       <h1>${escapeHtml(slide.title)}</h1>
       <div class="meta-bar">${renderMeta(slide.meta)}</div>
       <div class="matches">${slide.matches.map((m) => renderMatchCard(m, mode)).join("")}</div>
@@ -507,6 +526,14 @@ app.get("/api/download-png", async (req, res) => {
 
     await page.goto(`http://127.0.0.1:${PORT}/slide?${params}`, {
       waitUntil: "networkidle"
+    });
+
+    /*
+     * Fonts vollständig laden, bevor Playwright den Screenshot erstellt.
+     * Das verhindert Fallback-Fonts in einzelnen PNG-Exports.
+     */
+    await page.evaluate(async () => {
+      await document.fonts.ready;
     });
 
     const png = await page.locator("#slide-root").screenshot({ type: "png" });
