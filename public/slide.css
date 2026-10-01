@@ -139,6 +139,7 @@ body {
   text-transform: uppercase;
   text-align: center;
   white-space: nowrap;
+  transform: translate(-50%, -50%);
   transform: rotate(-3.95deg);
   transform-origin: center center;
   text-shadow: 4px 4px 0 rgba(0, 31, 68, 0.35);
@@ -240,10 +241,9 @@ body {
   left: 0;
   width: 1036px;
   height: 211px;
-  display: grid;
-  grid-template-columns: 270px 285px 115px minmax(0, 1fr);
-  align-items: center;
-  padding: 0 26px 0 16px;
+  position: absolute;
+  inset: 0;
+  padding: 0;
   color: var(--copy-blue);
   background: url("/assets/canva/match-card.png") center/100% 100% no-repeat;
   transform: scale(var(--card-scale));
@@ -251,10 +251,14 @@ body {
 }
 
 .team-box {
+  position: absolute;
+  left: 18px;
+  top: 22px;
+  width: 250px;
+  height: 166px;
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  height: 100%;
 }
 
 .team-label {
@@ -275,18 +279,23 @@ body {
 }
 
 .center-box {
+  position: absolute;
+  left: 297px;
+  top: 26px;
+  width: 245px;
+  height: 158px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 175px;
+  gap: 0;
   text-align: center;
 }
 
 .time {
   color: var(--copy-grey);
   font-size: 133.727px;
-  line-height: 0.79;
+  line-height: 0.76;
   font-weight: 400;
   letter-spacing: -0.035em;
   white-space: nowrap;
@@ -294,7 +303,7 @@ body {
 }
 
 .time-label {
-  margin-top: 2px;
+  margin-top: -2px;
   color: var(--copy-grey);
   font-size: 63.3008px;
   line-height: 0.8;
@@ -318,38 +327,41 @@ body {
 }
 
 .vs-box {
-  position: relative;
+  position: absolute;
+  left: 562px;
+  top: 18px;
   width: 109px;
   height: 176px;
-  align-self: center;
-  justify-self: center;
-  transform: translateX(11px);
   background: url("/assets/canva/vs-divider.png") center/contain no-repeat;
 }
 
-/* Canva-Originalgeometrie innerhalb des 109 x 176 VS-Assets. */
 .vs-box span {
   position: absolute;
-  left: 42.6px;
-  top: 78.9px;
-  width: 35.9px;
-  height: 45.35px;
+  left: 50%;
+  top: 50%;
+  width: 36px;
+  height: 45px;
   color: #fff;
   font-size: 38.25px;
   line-height: 45.35px;
   font-weight: 400;
   text-align: center;
   white-space: nowrap;
+  transform: translate(-50%, -50%);
   -webkit-text-stroke: 0.35px currentColor;
 }
 
 .opponent-box {
+  position: absolute;
+  left: 688px;
+  top: 20px;
+  width: 320px;
+  height: 170px;
   min-width: 0;
-  height: 176px;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 12px 5px 8px 0;
+  padding: 6px 16px 6px 16px;
   color: var(--copy-blue);
   font-size: 48px;
   line-height: 0.94;
@@ -377,3 +389,7 @@ body {
 .match-count-9 .slide-title {
   font-size: 112px;
 }
+
+
+/* v9 alignment hotfix */
+.match-card--results .center-box { top: 32px; height: 148px; }
