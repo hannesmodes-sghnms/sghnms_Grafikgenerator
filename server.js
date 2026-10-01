@@ -146,7 +146,7 @@ async function fetchClubPage({ from, to, page, retry = true }) {
   try {
     errorJson = JSON.parse(errorText);
   } catch {
-    // not json
+    // ignore
   }
 
   if (retry && response.status === 403 && errorJson?.code === "CLIENT_TOKEN_EXPIRED") {
@@ -399,13 +399,15 @@ function renderMatchCard(match, mode) {
   const opponentClass = opponentSizeClass(match.opponent);
 
   return `
-    <div class="match-card ${mode === "results" ? "match-card--results" : ""}">
-      <div class="team-box">
-        <div class="team-label fit-text fit-text--team">${escapeHtml(match.teamLabel)}</div>
+    <div class="match-card-shell">
+      <div class="match-card ${mode === "results" ? "match-card--results" : ""}">
+        <div class="team-box">
+          <div class="team-label fit-text fit-text--team">${escapeHtml(match.teamLabel)}</div>
+        </div>
+        <div class="center-box">${center}</div>
+        <div class="vs-box" aria-hidden="true"><span>VS</span></div>
+        <div class="opponent-box ${opponentClass} fit-text fit-text--opponent">${escapeHtml(match.opponent)}</div>
       </div>
-      <div class="center-box">${center}</div>
-      <div class="vs-box"><span>VS</span></div>
-      <div class="opponent-box ${opponentClass} fit-text fit-text--opponent">${escapeHtml(match.opponent)}</div>
     </div>
   `;
 }
@@ -425,7 +427,10 @@ function renderSlideHtml(slide, mode) {
 <body>
   <div id="slide-root" class="slide mode-${escapeHtml(mode)} match-count-${matchCount}">
     <div class="slide-inner">
-      <h1 class="slide-title">${renderBrushTitle(slide.title)}</h1>
+      <div class="corner-brand">${escapeHtml(BRAND.clubName).replaceAll(" ", "<br>")}</div>
+      <div class="title-wrap">
+        <h1 class="slide-title">${renderBrushTitle(slide.title)}</h1>
+      </div>
       <div class="meta-bar">${renderMeta(slide.meta)}</div>
       <div class="matches">${slide.matches.map((m) => renderMatchCard(m, mode)).join("")}</div>
     </div>
@@ -435,8 +440,8 @@ function renderSlideHtml(slide, mode) {
   <script>
     (() => {
       const slide = document.getElementById("slide-root");
-      const BASE_WIDTH = 1080;
-      const BASE_HEIGHT = 1350;
+      const BASE_WIDTH = 1122;
+      const BASE_HEIGHT = 1402;
 
       function fit() {
         const scale = Math.min(1, window.innerWidth / BASE_WIDTH);
@@ -446,22 +451,24 @@ function renderSlideHtml(slide, mode) {
       }
 
       function shrinkToFit(element, { minSize = 24, step = 1 } = {}) {
-        const style = window.getComputedStyle(element);
-        let fontSize = parseFloat(style.fontSize);
-        let lineHeight = parseFloat(style.lineHeight);
-        if (!Number.isFinite(fontSize)) return;
-        if (!Number.isFinite(lineHeight)) {
-          lineHeight = fontSize * 0.95;
-        }
+        const computed = window.getComputedStyle(element);
+        const baseSize = parseFloat(element.dataset.baseSize || computed.fontSize);
+        const baseLine = parseFloat(computed.lineHeight) || baseSize * 0.96;
 
+        element.style.fontSize = baseSize + "px";
+        element.style.lineHeight = baseLine + "px";
+
+        let fontSize = baseSize;
+        let lineHeight = baseLine;
         let guard = 0;
+
         while (
-          guard < 100 &&
+          guard < 120 &&
           fontSize > minSize &&
           (element.scrollWidth > element.clientWidth || element.scrollHeight > element.clientHeight)
         ) {
           fontSize -= step;
-          lineHeight = Math.max(fontSize * 0.94, minSize);
+          lineHeight = Math.max(fontSize * 0.96, minSize);
           element.style.fontSize = fontSize + "px";
           element.style.lineHeight = lineHeight + "px";
           guard += 1;
@@ -470,11 +477,13 @@ function renderSlideHtml(slide, mode) {
 
       function fitTextBlocks() {
         document.querySelectorAll(".fit-text--team").forEach((element) => {
-          shrinkToFit(element, { minSize: 26, step: 1 });
+          element.dataset.baseSize = element.dataset.baseSize || window.getComputedStyle(element).fontSize;
+          shrinkToFit(element, { minSize: 22, step: 1 });
         });
 
         document.querySelectorAll(".fit-text--opponent").forEach((element) => {
-          shrinkToFit(element, { minSize: 22, step: 1 });
+          element.dataset.baseSize = element.dataset.baseSize || window.getComputedStyle(element).fontSize;
+          shrinkToFit(element, { minSize: 20, step: 1 });
         });
       }
 
