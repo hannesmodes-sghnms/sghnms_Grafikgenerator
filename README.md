@@ -50,3 +50,12 @@ Danach Port 3000 öffnen.
 ## Font-Fix v7
 
 Bebas Neue wird nicht mehr über `@fontsource` eingebunden. Die Slide-HTML lädt die Schrift ausschließlich über `@font-face` aus `public/assets/fonts/`. Dadurch kann im Browser unter **Rendered Fonts** eindeutig `Bebas Neue` geprüft werden.
+
+## v8 – Canva-Feinjustierung Uhrzeit / VS
+
+- Uhrzeit auf die Canva-Größe `133.727 px` angehoben.
+- `UHR` auf `63.3008 px` gesetzt und vertikal enger an die Uhrzeit gezogen.
+- Zeitfarbe exakt auf `#545454` gesetzt.
+- VS-Asset um 11 px an die originale horizontale Position verschoben.
+- `Vs` nutzt jetzt die aus dem Canva-Editor ausgelesene Textbox innerhalb des Original-Assets (`38.25 px`).
+- Restliches Kartenlayout bleibt gegenüber v7 unverändert.

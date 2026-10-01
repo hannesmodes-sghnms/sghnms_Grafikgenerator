@@ -24,7 +24,7 @@
   --brand-blue: #001f44;
   --score-red: #bf0b0f;
   --copy-blue: #0d2f69;
-  --copy-grey: #5f5f61;
+  --copy-grey: #545454;
 }
 
 * {
@@ -285,7 +285,7 @@ body {
 
 .time {
   color: var(--copy-grey);
-  font-size: 116px;
+  font-size: 133.727px;
   line-height: 0.79;
   font-weight: 400;
   letter-spacing: -0.035em;
@@ -294,9 +294,9 @@ body {
 }
 
 .time-label {
-  margin-top: 10px;
+  margin-top: 2px;
   color: var(--copy-grey);
-  font-size: 54px;
+  font-size: 63.3008px;
   line-height: 0.8;
   font-weight: 400;
   -webkit-text-stroke: 0.45px currentColor;
@@ -318,23 +318,28 @@ body {
 }
 
 .vs-box {
+  position: relative;
   width: 109px;
   height: 176px;
   align-self: center;
   justify-self: center;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  transform: translateX(11px);
   background: url("/assets/canva/vs-divider.png") center/contain no-repeat;
 }
 
+/* Canva-Originalgeometrie innerhalb des 109 x 176 VS-Assets. */
 .vs-box span {
-  position: relative;
-  top: 1px;
+  position: absolute;
+  left: 42.6px;
+  top: 78.9px;
+  width: 35.9px;
+  height: 45.35px;
   color: #fff;
-  font-size: 35px;
-  line-height: 1;
+  font-size: 38.25px;
+  line-height: 45.35px;
   font-weight: 400;
+  text-align: center;
+  white-space: nowrap;
   -webkit-text-stroke: 0.35px currentColor;
 }
 
