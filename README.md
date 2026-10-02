@@ -1,90 +1,60 @@
-# SGHNMS Handball Social Generator v12
+# SGHNMS Social Generator
 
-## Änderungen gegenüber v11
+Statischer Instagram-Spieltag-/Ergebnisgenerator für SG Handball Neumünster.
 
-### Headline Drop
+## Architektur ab v21
 
-Der Edo-Headline wird der Canva-**Drop** jetzt über `filter: drop-shadow(...)` statt `text-shadow` gegeben. Dadurch folgt der Effekt der tatsächlichen Edo-Glyphenkontur inklusive Brush-Kanten und Umlaut-Punkten.
+Der Generator läuft produktiv vollständig über GitHub Pages:
 
-Grundlage der Canva-Einstellungen:
+1. GitHub Actions ruft regelmäßig die handball.net Club-API ab.
+2. Der aktuelle Saisonspielplan wird beim Build nach `public/data/matches.json` geschrieben.
+3. GitHub Pages liefert nur statische Dateien aus.
+4. Filterung, Slide-Gruppierung, Rendering und PNG-Download laufen komplett im Browser.
 
-- Richtung: `-45`
-- Versatz: `50`
-- Blur: `0`
-- Transparenz: `40`
-- Farbe: Schwarz
+Ein dauerhaft laufender Node-/Cloud-Server ist damit nicht mehr erforderlich.
 
-Die CSS-Näherung ist zentral über diese Variablen steuerbar:
+## GitHub Pages aktivieren
 
-```css
---headline-drop-x: 11px;
---headline-drop-y: 11px;
---headline-drop-color: rgba(0, 0, 0, 0.60);
-```
+Im Repository einmalig:
 
-### Nur echtes Bebas Neue Bold
+**Settings → Pages → Build and deployment → Source → GitHub Actions**
 
-Für den Slide wird **kein Bebas Neue Regular mehr registriert**. Es gibt nur noch:
+Danach deployt `.github/workflows/deploy-pages.yml` automatisch:
 
-```text
-public/assets/fonts/BebasNeue-Bold.ttf
-```
+- bei jedem Push auf `main`
+- alle 30 Minuten
+- manuell über **Actions → Deploy GitHub Pages → Run workflow**
 
-und Edo für die Brush-Headline:
-
-```text
-public/assets/fonts/edo.ttf
-```
-
-Alle Texte außer der Edo-Headline werden mit `Bebas Neue`, `font-weight: 700` und `font-synthesis: none` gerendert.
-
-### Abgerundete Match Card
-
-Die komplette Match-Card wird jetzt mit `border-radius: 22px` und `overflow: hidden` geclippt. Zusätzlich erhält das Hintergrundbild selbst dieselbe Rundung. Damit bleiben auch die separat positionierten Trapez-/VS-/Text-Layer innerhalb der runden weißen Karte.
-
-## Weiter benötigte lokale Assets
-
-```text
-public/assets/fonts/edo.ttf
-public/assets/fonts/BebasNeue-Bold.ttf
-public/assets/sghnms_images/sghnms_bg.png
-```
-
-Die Fontdateien selbst sind nicht Bestandteil dieses ZIPs; vorhandene Dateien im Repo bitte beibehalten.
-
-## Start
+## Lokaler Test
 
 ```bash
 npm install
+npm run update:data
 npm start
 ```
 
+Danach im Browser:
 
-## v13 – feste Canva-Headlines
+```text
+http://localhost:3000
+```
 
-Die Brush-Headlines werden nicht mehr live mit Edo gerendert, sondern als originale Canva-SVGs:
+## Datenquelle
 
-- `public/assets/headlines/headline-home.svg`
-- `public/assets/headlines/headline-away.svg`
-- `public/assets/headlines/headline-results.svg`
+`npm run update:data`:
 
-Dadurch sind Umlaut, Neigung und Drop-Effekt exakt im Asset enthalten und browserunabhängig.
-Die dynamischen Texte verwenden weiterhin `public/assets/fonts/BebasNeue-Bold.ttf`.
+- bestimmt automatisch die aktuelle Handball-Saison
+- lädt den Vereins-Spielplan über `club_id=1yrb3n9`
+- liest den aktuellen `client-token` aus der öffentlichen handball.net Club-Seite
+- speichert die normalisierten Spiele unter `public/data/matches.json`
 
-## v15
+## Bestehende Assets
 
-Ausgehend von v13 wurden ausschließlich diese Layoutpunkte korrigiert:
+Die bereits im Repository vorhandenen Design-Assets und Fonts bleiben unverändert erforderlich, insbesondere:
 
-- transparenter Rand der drei Headline-SVGs wird pro Asset kompensiert
-- Abstand zwischen Uhrzeit und `UHR` erhöht
-- Gegner-Schriftgrößen an die Canva-Referenz angepasst
-- Trapez-Asset ca. 10 % größer dargestellt, um den vertikalen Abstand zur weißen Karte zu reduzieren
-
-VS, Match-Card-Geometrie, Meta-Bar und übrige Positionen bleiben unverändert gegenüber v13.
-
-
-
-## v18
-- Opponent auto-fit waits for `document.fonts.ready`.
-- Every fit pass resets to the CSS base size before measuring.
-- Opponent names keep the base size for one or two lines and shrink only for 3+ lines or unbreakable overflow.
+```text
+public/assets/sghnms_images/sghnms_bg.png
+public/assets/fonts/BebasNeue-Bold.ttf
+public/assets/headlines/*.svg
+public/assets/canva/*
+```

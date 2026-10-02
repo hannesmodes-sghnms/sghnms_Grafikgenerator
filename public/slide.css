@@ -1,6 +1,6 @@
 @font-face {
   font-family: "Bebas Neue";
-  src: url("/assets/fonts/BebasNeue-Bold.ttf") format("truetype");
+  src: url("assets/fonts/BebasNeue-Bold.ttf") format("truetype");
   font-style: normal;
   font-weight: 700;
   font-display: block;
@@ -46,8 +46,8 @@ body {
   font-synthesis: none;
   background-color: #071f53;
   background-image:
-    url("/assets/sghnms_images/sghnms_bg.png"),
-    url("/assets/canva/slide-bg.png");
+    url("assets/sghnms_images/sghnms_bg.png"),
+    url("assets/canva/slide-bg.png");
   background-position: center, center;
   background-repeat: no-repeat, no-repeat;
   background-size: cover, cover;
@@ -203,7 +203,7 @@ body {
   justify-content: center;
   gap: 20px;
   padding: 2px 40px 0;
-  background: url("/assets/canva/meta-bar.png") center/100% 100% no-repeat;
+  background: url("assets/canva/meta-bar.png") center/100% 100% no-repeat;
 }
 
 .meta-part {
@@ -220,7 +220,7 @@ body {
   width: 18px;
   height: 16px;
   flex: 0 0 auto;
-  background: url("/assets/canva/meta-dot.png") center/contain no-repeat;
+  background: url("assets/canva/meta-dot.png") center/contain no-repeat;
 }
 
 /*
