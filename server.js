@@ -363,10 +363,10 @@ function renderMeta(meta) {
 
 function opponentSizeClass(name = "") {
   const length = String(name).trim().length;
-  if (length >= 42) return "opponent-box--xxl";
-  if (length >= 34) return "opponent-box--xl";
-  if (length >= 26) return "opponent-box--lg";
-  if (length >= 19) return "opponent-box--md";
+  if (length >= 40) return "opponent-box--xxl";
+  if (length >= 32) return "opponent-box--xl";
+  if (length >= 24) return "opponent-box--lg";
+  if (length >= 18) return "opponent-box--md";
   return "";
 }
 
@@ -409,7 +409,7 @@ function renderMatchCard(match, mode) {
           <div class="vs-box" aria-hidden="true">
             <img class="vs-asset" src="/assets/canva/vs-divider.png" alt="">
           </div>
-          <div class="opponent-box ${opponentClass} fit-text fit-text--opponent">${renderBreakableName(match.opponent)}</div>
+          <div class="opponent-box ${opponentClass}"><div class="opponent-text fit-text fit-text--opponent">${renderBreakableName(match.opponent)}</div></div>
         </div>
       </div>
     </div>
@@ -486,11 +486,9 @@ function renderSlideHtml(slide, mode) {
         });
 
         document.querySelectorAll(".fit-text--opponent").forEach((element) => {
-          element.dataset.baseSize = element.dataset.baseSize || window.getComputedStyle(element).fontSize;
-
           const computed = window.getComputedStyle(element);
-          const baseSize = parseFloat(element.dataset.baseSize || computed.fontSize);
-          const baseLine = parseFloat(computed.lineHeight) || baseSize * 0.9;
+          const baseSize = parseFloat(computed.fontSize);
+          const baseLine = Math.max(parseFloat(computed.lineHeight) || baseSize * 0.9, baseSize * 0.9);
 
           let fontSize = baseSize;
           let lineHeight = baseLine;
@@ -499,21 +497,21 @@ function renderSlideHtml(slide, mode) {
           element.style.fontSize = fontSize + "px";
           element.style.lineHeight = lineHeight + "px";
 
-          const lineCount = () => {
-            const currentLine = parseFloat(window.getComputedStyle(element).lineHeight) || lineHeight;
-            return Math.max(1, Math.round(element.scrollHeight / currentLine));
+          const getLineCount = () => {
+            const currentLineHeight = parseFloat(window.getComputedStyle(element).lineHeight) || lineHeight;
+            return Math.max(1, Math.round(element.scrollHeight / currentLineHeight));
           };
 
-          while (guard < 140 && fontSize > 20) {
+          while (guard < 140 && fontSize > 18) {
+            const lines = getLineCount();
             const fitsHeight = element.scrollHeight <= element.clientHeight + 0.5;
-            const lines = lineCount();
 
-            if (fitsHeight && lines <= 2) {
+            if (lines <= 2 && fitsHeight) {
               break;
             }
 
             fontSize -= 1;
-            lineHeight = Math.max(fontSize * 0.9, 20);
+            lineHeight = Math.max(fontSize * 0.9, 18);
             element.style.fontSize = fontSize + "px";
             element.style.lineHeight = lineHeight + "px";
             guard += 1;

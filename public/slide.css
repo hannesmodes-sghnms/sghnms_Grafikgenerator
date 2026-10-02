@@ -104,6 +104,39 @@ body {
   --card-gap: 1px;
 }
 
+.match-count-1,
+.match-count-2 {
+  --opponent-base-size: 47.4px;
+}
+
+.match-count-3 {
+  --opponent-base-size: 49.4px;
+}
+
+.match-count-4 {
+  --opponent-base-size: 51.6px;
+}
+
+.match-count-5 {
+  --opponent-base-size: 50.9px;
+}
+
+.match-count-6 {
+  --opponent-base-size: 53.6px;
+}
+
+.match-count-7 {
+  --opponent-base-size: 55.5px;
+}
+
+.match-count-8 {
+  --opponent-base-size: 56.8px;
+}
+
+.match-count-9 {
+  --opponent-base-size: 57.4px;
+}
+
 .slide-inner {
   position: relative;
   z-index: 2;
@@ -118,7 +151,7 @@ body {
  */
 .title-wrap {
   position: absolute;
-  top: 22px;
+  top: 12px;
   left: 0;
   width: 1122px;
   height: 359px;
@@ -143,15 +176,15 @@ body {
  * Die sichtbare Unterkante der drei Headlines wird deshalb angeglichen,
  * ohne Meta-Bar oder restliches Layout zu verschieben. */
 .slide-title-image[src$="headline-away.svg"] {
-  transform: translateY(1px);
+  transform: translateY(8px);
 }
 
 .slide-title-image[src$="headline-home.svg"] {
-  transform: translateY(-1px);
+  transform: translateY(4px);
 }
 
 .slide-title-image[src$="headline-results.svg"] {
-  transform: translateY(-9px);
+  transform: translateY(-2px);
 }
 
 .slide-title-fallback {
@@ -377,21 +410,24 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 4px 6px;
+  padding: 6px 8px;
   color: var(--copy-blue);
-  font-size: 76px;
-  line-height: 0.9;
-  font-weight: 700;
-  text-align: center;
   text-transform: uppercase;
+}
+
+.opponent-text {
+  width: 100%;
+  max-width: 100%;
+  text-align: center;
+  font-size: var(--opponent-base-size, 47.4px);
+  line-height: 0.9;
   word-break: normal;
   overflow-wrap: break-word;
-  white-space: normal;
   hyphens: none;
 }
 
-.opponent-box--md { font-size: 71px; }
-.opponent-box--lg { font-size: 66px; }
-.opponent-box--xl { font-size: 61px; }
-.opponent-box--xxl { font-size: 57px; }
+.opponent-box--md { font-size: inherit; }
+.opponent-box--lg { font-size: inherit; }
+.opponent-box--xl { font-size: inherit; }
+.opponent-box--xxl { font-size: inherit; }
 
