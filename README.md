@@ -58,3 +58,15 @@ Die Fontdateien selbst sind nicht Bestandteil dieses ZIPs; vorhandene Dateien im
 npm install
 npm start
 ```
+
+
+## v13 – feste Canva-Headlines
+
+Die Brush-Headlines werden nicht mehr live mit Edo gerendert, sondern als originale Canva-SVGs:
+
+- `public/assets/headlines/headline-home.svg`
+- `public/assets/headlines/headline-away.svg`
+- `public/assets/headlines/headline-results.svg`
+
+Dadurch sind Umlaut, Neigung und Drop-Effekt exakt im Asset enthalten und browserunabhängig.
+Die dynamischen Texte verwenden weiterhin `public/assets/fonts/BebasNeue-Bold.ttf`.

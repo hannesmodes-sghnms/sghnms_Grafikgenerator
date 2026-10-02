@@ -1,12 +1,4 @@
 @font-face {
-  font-family: "Edo";
-  src: url("/assets/fonts/edo.ttf") format("truetype");
-  font-style: normal;
-  font-weight: 400;
-  font-display: block;
-}
-
-@font-face {
   font-family: "Bebas Neue";
   src: url("/assets/fonts/BebasNeue-Bold.ttf") format("truetype");
   font-style: normal;
@@ -22,12 +14,6 @@
   --copy-blue: #0d2f69;
   --copy-grey: #545454;
 
-  /* Canva Drop: Richtung -45 / Versatz 50 / Blur 0 / Transparenz 40 / Schwarz.
-   * Canva-Versatz ist kein 1:1-CSS-Pixelwert. Der filter-basierte Shadow
-   * folgt der Glyphenkontur (inkl. Edo-Brush-Kanten und Umlaut-Punkte). */
-  --headline-drop-x: 11px;
-  --headline-drop-y: 11px;
-  --headline-drop-color: rgba(0, 0, 0, 0.60);
 }
 
 * {
@@ -69,8 +55,8 @@ body {
 }
 
 
-/* Auf dem gesamten Slide gibt es nur zwei Typografien:
- * Edo für die Brush-Headline, echtes Bebas Neue Bold für alles andere. */
+/* Die dynamische Typografie nutzt echtes Bebas Neue Bold.
+ * Die drei festen Brush-Headlines kommen als Canva-SVG-Assets. */
 .slide * {
   font-family: "Bebas Neue", sans-serif;
   font-weight: 700;
@@ -126,78 +112,43 @@ body {
 }
 
 /*
- * Headline: feste Canva-Geometrie plus Drop-Effekt.
+ * Headline: Original-Canva-SVGs.
+ * Die SVG-Dateien enthalten bereits Rotation, Glyphenform und Drop-Effekt.
+ * Wir rendern sie in ihrer nativen Geometrie und zentrieren nur den SVG-Canvas.
  */
 .title-wrap {
   position: absolute;
-  top: 118px;
-  left: 40px;
-  width: 1042px;
-  height: 182px;
+  top: 22px;
+  left: 0;
+  width: 1122px;
+  height: 359px;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   overflow: visible;
+  pointer-events: none;
 }
 
-.slide-title {
-  margin: 0;
-  max-width: 1010px;
+.slide-title-image {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: none;
+  max-height: none;
+  object-fit: contain;
+  user-select: none;
+}
+
+.slide-title-fallback {
+  margin-top: 96px;
   color: #fff;
-  font-family: "Edo", cursive;
-  font-size: 122px;
-  line-height: 0.9;
-  font-weight: 400;
-  letter-spacing: -0.01em;
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 110px;
+  line-height: 1;
+  font-weight: 700;
   text-transform: uppercase;
   text-align: center;
-  white-space: nowrap;
-  transform: rotate(-3.95deg);
-  transform-origin: center center;
-  text-shadow: none;
-  filter: drop-shadow(
-    var(--headline-drop-x)
-    var(--headline-drop-y)
-    0
-    var(--headline-drop-color)
-  );
 }
-
-
-.slide-title,
-.slide-title * {
-  font-family: "Edo", cursive;
-  font-weight: 400;
-}
-
-.slide-title[data-title="HEIMSPIELE"],
-.slide-title[data-title="ERGEBNISSE"] {
-  font-size: 128px;
-}
-
-.slide-title[data-title="AUSWÄRTSSPIELE"] {
-  font-size: 116px;
-}
-
-.edo-umlaut {
-  position: relative;
-  display: inline-block;
-}
-
-.edo-umlaut::before,
-.edo-umlaut::after {
-  content: "";
-  position: absolute;
-  top: -0.11em;
-  width: 0.10em;
-  height: 0.10em;
-  border-radius: 2px;
-  background: currentColor;
-  transform: rotate(-18deg);
-}
-
-.edo-umlaut::before { left: 0.29em; }
-.edo-umlaut::after { left: 0.52em; }
 
 .meta-bar {
   position: absolute;
@@ -426,10 +377,3 @@ body {
 .opponent-box--xl { font-size: 52px; }
 .opponent-box--xxl { font-size: 48px; }
 
-/* Bei sehr vielen Spielen bleibt die bisherige Skalierung bestehen. */
-.match-count-6 .slide-title,
-.match-count-7 .slide-title,
-.match-count-8 .slide-title,
-.match-count-9 .slide-title {
-  font-size: 112px;
-}

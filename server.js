@@ -370,15 +370,16 @@ function opponentSizeClass(name = "") {
   return "";
 }
 
-function renderBrushTitle(title = "") {
-  return [...String(title).toUpperCase()]
-    .map((character) => {
-      if (character === "Ä") return '<span class="edo-umlaut">A</span>';
-      if (character === "Ö") return '<span class="edo-umlaut">O</span>';
-      if (character === "Ü") return '<span class="edo-umlaut">U</span>';
-      return escapeHtml(character);
-    })
-    .join("");
+function headlineAssetForTitle(title = "") {
+  const normalized = String(title).toUpperCase();
+
+  const assets = {
+    "HEIMSPIELE": "/assets/headlines/headline-home.svg",
+    "AUSWÄRTSSPIELE": "/assets/headlines/headline-away.svg",
+    "ERGEBNISSE": "/assets/headlines/headline-results.svg"
+  };
+
+  return assets[normalized] ?? null;
 }
 
 function renderBreakableName(value = "") {
@@ -430,7 +431,9 @@ function renderSlideHtml(slide, mode) {
   <div id="slide-root" class="slide mode-${escapeHtml(mode)} match-count-${matchCount}">
     <div class="slide-inner">
       <div class="title-wrap">
-        <h1 class="slide-title" data-title="${escapeHtml(slide.title)}">${renderBrushTitle(slide.title)}</h1>
+        ${headlineAssetForTitle(slide.title)
+          ? `<img class="slide-title-image" src="${headlineAssetForTitle(slide.title)}" alt="${escapeHtml(slide.title)}">`
+          : `<div class="slide-title-fallback">${escapeHtml(slide.title)}</div>`}
       </div>
       <div class="meta-bar">${renderMeta(slide.meta)}</div>
       <div class="matches">${slide.matches.map((m) => renderMatchCard(m, mode)).join("")}</div>
