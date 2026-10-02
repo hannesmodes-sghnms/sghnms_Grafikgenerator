@@ -506,10 +506,9 @@ function renderSlideHtml(slide, mode) {
 
           while (guard < 140 && fontSize > 20) {
             const fitsHeight = element.scrollHeight <= element.clientHeight + 0.5;
-            const fitsWidth = element.scrollWidth <= element.clientWidth + 0.5;
             const lines = lineCount();
 
-            if (fitsHeight && fitsWidth && lines <= 2) {
+            if (fitsHeight && lines <= 2) {
               break;
             }
 

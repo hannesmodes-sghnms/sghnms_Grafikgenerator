@@ -118,7 +118,7 @@ body {
  */
 .title-wrap {
   position: absolute;
-  top: 8px;
+  top: 22px;
   left: 0;
   width: 1122px;
   height: 359px;
@@ -385,7 +385,8 @@ body {
   text-align: center;
   text-transform: uppercase;
   word-break: normal;
-  overflow-wrap: normal;
+  overflow-wrap: break-word;
+  white-space: normal;
   hyphens: none;
 }
 
