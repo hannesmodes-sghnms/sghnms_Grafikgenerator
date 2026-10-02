@@ -8,18 +8,6 @@
 
 @font-face {
   font-family: "Bebas Neue";
-  src:
-    url("/assets/fonts/BebasNeue-Regular.woff2") format("woff2"),
-    url("/assets/fonts/BebasNeue-Regular.woff") format("woff"),
-    url("/assets/fonts/BebasNeue-Regular.ttf") format("truetype"),
-    url("/assets/fonts/BebasNeue-Regular.otf") format("opentype");
-  font-style: normal;
-  font-weight: 400;
-  font-display: block;
-}
-
-@font-face {
-  font-family: "Bebas Neue";
   src: url("/assets/fonts/BebasNeue-Bold.ttf") format("truetype");
   font-style: normal;
   font-weight: 700;
@@ -34,12 +22,12 @@
   --copy-blue: #0d2f69;
   --copy-grey: #545454;
 
-  /* Canva Drop: #001f44 / Blur 0 / Transparenz 35.
-   * Offset 54 ist ein Canva-Regler, kein CSS-Pixelwert. 8 px bildet
-   * die sichtbare Wirkung bei dieser Headline-Größe deutlich näher ab. */
-  --headline-drop-x: 8px;
-  --headline-drop-y: 8px;
-  --headline-drop-color: rgba(0, 31, 68, 0.65);
+  /* Canva Drop: Richtung -45 / Versatz 50 / Blur 0 / Transparenz 40 / Schwarz.
+   * Canva-Versatz ist kein 1:1-CSS-Pixelwert. Der filter-basierte Shadow
+   * folgt der Glyphenkontur (inkl. Edo-Brush-Kanten und Umlaut-Punkte). */
+  --headline-drop-x: 11px;
+  --headline-drop-y: 11px;
+  --headline-drop-color: rgba(0, 0, 0, 0.60);
 }
 
 * {
@@ -68,6 +56,7 @@ body {
   overflow: hidden;
   color: #fff;
   font-family: "Bebas Neue", sans-serif;
+  font-weight: 700;
   font-synthesis: none;
   background-color: #071f53;
   background-image:
@@ -77,6 +66,15 @@ body {
   background-repeat: no-repeat, no-repeat;
   background-size: cover, cover;
   transform-origin: top left;
+}
+
+
+/* Auf dem gesamten Slide gibt es nur zwei Typografien:
+ * Edo für die Brush-Headline, echtes Bebas Neue Bold für alles andere. */
+.slide * {
+  font-family: "Bebas Neue", sans-serif;
+  font-weight: 700;
+  font-synthesis: none;
 }
 
 .match-count-1,
@@ -146,7 +144,7 @@ body {
   margin: 0;
   max-width: 1010px;
   color: #fff;
-  font-family: "Edo", "Bebas Neue", sans-serif;
+  font-family: "Edo", cursive;
   font-size: 122px;
   line-height: 0.9;
   font-weight: 400;
@@ -156,11 +154,20 @@ body {
   white-space: nowrap;
   transform: rotate(-3.95deg);
   transform-origin: center center;
-  text-shadow:
+  text-shadow: none;
+  filter: drop-shadow(
     var(--headline-drop-x)
     var(--headline-drop-y)
     0
-    var(--headline-drop-color);
+    var(--headline-drop-color)
+  );
+}
+
+
+.slide-title,
+.slide-title * {
+  font-family: "Edo", cursive;
+  font-weight: 400;
 }
 
 .slide-title[data-title="HEIMSPIELE"],
@@ -257,6 +264,8 @@ body {
   width: 1036px;
   height: 211px;
   padding: 0;
+  overflow: hidden;
+  border-radius: 22px;
   color: var(--copy-blue);
   transform: scale(var(--card-scale));
   transform-origin: top left;
@@ -268,6 +277,7 @@ body {
   width: 1036px;
   height: 211px;
   display: block;
+  border-radius: 22px;
   pointer-events: none;
   user-select: none;
 }
