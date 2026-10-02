@@ -82,3 +82,9 @@ Ausgehend von v13 wurden ausschließlich diese Layoutpunkte korrigiert:
 
 VS, Match-Card-Geometrie, Meta-Bar und übrige Positionen bleiben unverändert gegenüber v13.
 
+
+
+## v18
+- Opponent auto-fit waits for `document.fonts.ready`.
+- Every fit pass resets to the CSS base size before measuring.
+- Opponent names keep the base size for one or two lines and shrink only for 3+ lines or unbreakable overflow.

@@ -486,34 +486,56 @@ function renderSlideHtml(slide, mode) {
         });
 
         document.querySelectorAll(".fit-text--opponent").forEach((element) => {
-          const computed = window.getComputedStyle(element);
-          const baseSize = parseFloat(computed.fontSize);
-          const baseLine = Math.max(parseFloat(computed.lineHeight) || baseSize * 0.9, baseSize * 0.9);
+          /*
+           * IMPORTANT:
+           * Never use the current computed font-size as the next base size.
+           * fitTextBlocks() may run more than once. An inline size from a
+           * previous shrink pass must not become the new starting point.
+           */
+          element.style.removeProperty("font-size");
+          element.style.removeProperty("line-height");
 
+          const computed = window.getComputedStyle(element);
+          const cssBaseSize = parseFloat(
+            computed.getPropertyValue("--opponent-base-size") || computed.fontSize
+          );
+
+          const baseSize = Number.isFinite(cssBaseSize) ? cssBaseSize : 47.4;
           let fontSize = baseSize;
-          let lineHeight = baseLine;
+          let lineHeight = fontSize * 0.9;
           let guard = 0;
 
-          element.style.fontSize = fontSize + "px";
-          element.style.lineHeight = lineHeight + "px";
+          const applySize = () => {
+            element.style.fontSize = fontSize + "px";
+            element.style.lineHeight = lineHeight + "px";
+          };
 
           const getLineCount = () => {
             const currentLineHeight = parseFloat(window.getComputedStyle(element).lineHeight) || lineHeight;
-            return Math.max(1, Math.round(element.scrollHeight / currentLineHeight));
+            /* Subtract a tiny tolerance to avoid rounding a 2-line block to 3. */
+            return Math.max(1, Math.ceil((element.scrollHeight - 1) / currentLineHeight));
           };
+
+          applySize();
 
           while (guard < 140 && fontSize > 18) {
             const lines = getLineCount();
-            const fitsHeight = element.scrollHeight <= element.clientHeight + 0.5;
+            const hasUnbreakableOverflow = element.scrollWidth > element.clientWidth + 0.5;
 
-            if (lines <= 2 && fitsHeight) {
+            /*
+             * Desired rule:
+             * 1 line at base size is fine.
+             * 2 lines at the SAME base size are also fine.
+             * Only shrink when it would need 3+ lines (or a single token
+             * physically cannot fit in the box).
+             */
+            if (lines <= 2 && !hasUnbreakableOverflow) {
               break;
             }
 
-            fontSize -= 1;
-            lineHeight = Math.max(fontSize * 0.9, 18);
-            element.style.fontSize = fontSize + "px";
-            element.style.lineHeight = lineHeight + "px";
+            fontSize = Math.max(18, fontSize - 1);
+            lineHeight = fontSize * 0.9;
+            applySize();
             guard += 1;
           }
         });
@@ -567,8 +589,16 @@ function renderSlideHtml(slide, mode) {
 
       window.sghnmsRenderSlidePng = renderSlideBlob;
 
-      fitTextBlocks();
-      fit();
+      async function initializeLayout() {
+        /* Measuring with the fallback font caused the opponent text to be
+         * shrunk before Bebas Neue Bold was available. Wait for the real font. */
+        await document.fonts.ready;
+        fitTextBlocks();
+        fit();
+      }
+
+      initializeLayout();
+
       window.addEventListener("resize", () => {
         fitTextBlocks();
         fit();
