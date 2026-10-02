@@ -345,6 +345,10 @@ body {
   text-align: center;
 }
 
+.match-card:not(.match-card--results) .center-box {
+  transform: translateY(10px);
+}
+
 .time {
   color: var(--copy-grey);
   font-size: 158px;

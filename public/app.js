@@ -12,6 +12,7 @@ const slides = document.querySelector("#slides");
 const BASE_HREF = new URL("./", window.location.href).href;
 
 let dataSet = null;
+const matchOverrides = new Map();
 
 function isoDate(date) {
   const year = date.getFullYear();
@@ -133,15 +134,17 @@ function buildSlides(matches, mode) {
       });
     }
 
+    const override = matchOverrides.get(String(match.id)) || {};
+
     groups.get(key).matches.push({
       id: match.id,
       teamId: perspective.teamId,
-      teamLabel: perspective.teamLabel,
-      opponent: perspective.opponent?.name ?? "",
-      time: match.time,
+      teamLabel: override.teamLabel ?? perspective.teamLabel,
+      opponent: override.opponent ?? perspective.opponent?.name ?? "",
+      time: override.time ?? match.time,
       isHome: perspective.isHome,
-      ownScore: perspective.ownScore,
-      opponentScore: perspective.opponentScore,
+      ownScore: override.ownScore ?? perspective.ownScore,
+      opponentScore: override.opponentScore ?? perspective.opponentScore,
       venue: shortVenue
     });
   }
@@ -457,11 +460,22 @@ async function downloadPng(button, iframe, filename) {
       throw new Error("Slide ist noch nicht vollständig geladen.");
     }
 
-    const blob = await renderer();
+    const iframeBlob = await renderer();
 
-    if (!(blob instanceof Blob)) {
+    if (!iframeBlob || typeof iframeBlob.arrayBuffer !== "function") {
       throw new Error("PNG konnte nicht erzeugt werden.");
     }
+
+    /*
+     * The renderer runs inside the iframe. A Blob created there belongs to a
+     * different JavaScript realm, so `iframeBlob instanceof Blob` is false in
+     * the parent page even though it is a perfectly valid Blob. Re-create it
+     * in the parent realm before passing it to URL.createObjectURL().
+     */
+    const blob = new Blob(
+      [await iframeBlob.arrayBuffer()],
+      { type: iframeBlob.type || "image/png" }
+    );
 
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
@@ -482,6 +496,124 @@ async function downloadPng(button, iframe, filename) {
   }
 }
 
+function parseScoreOverride(value) {
+  const match = String(value || "").trim().match(/^(\d{1,3})\s*[:\-]\s*(\d{1,3})$/);
+  if (!match) return null;
+
+  return {
+    ownScore: Number(match[1]),
+    opponentScore: Number(match[2])
+  };
+}
+
+function updateMatchOverride(match, field, value) {
+  const key = String(match.id);
+  const current = { ...(matchOverrides.get(key) || {}) };
+  const cleanValue = String(value ?? "").trim();
+
+  if (field === "score") {
+    const parsed = parseScoreOverride(cleanValue);
+
+    if (!cleanValue) {
+      delete current.ownScore;
+      delete current.opponentScore;
+    } else if (parsed) {
+      current.ownScore = parsed.ownScore;
+      current.opponentScore = parsed.opponentScore;
+    } else {
+      return false;
+    }
+  } else if (!cleanValue) {
+    delete current[field];
+  } else {
+    current[field] = cleanValue;
+  }
+
+  if (Object.keys(current).length) {
+    matchOverrides.set(key, current);
+  } else {
+    matchOverrides.delete(key);
+  }
+
+  return true;
+}
+
+function applyOverridesToRenderedMatch(match) {
+  const override = matchOverrides.get(String(match.id)) || {};
+
+  return {
+    ...match,
+    teamLabel: override.teamLabel ?? match.teamLabel,
+    opponent: override.opponent ?? match.opponent,
+    time: override.time ?? match.time,
+    ownScore: override.ownScore ?? match.ownScore,
+    opponentScore: override.opponentScore ?? match.opponentScore
+  };
+}
+
+function renderOverrideRow(match, mode) {
+  const rendered = applyOverridesToRenderedMatch(match);
+  const resultValue = rendered.ownScore !== null && rendered.opponentScore !== null
+    ? `${rendered.ownScore}:${rendered.opponentScore}`
+    : "";
+
+  return `
+    <div class="override-row" data-match-id="${escapeHtml(match.id)}">
+      <div class="override-row__match">
+        <strong>${escapeHtml(match.teamLabel)}</strong>
+        <span>vs. ${escapeHtml(match.opponent)}</span>
+      </div>
+
+      <label>
+        <span>Team links</span>
+        <input
+          type="text"
+          data-override-field="teamLabel"
+          value="${escapeHtml(rendered.teamLabel)}"
+          placeholder="${escapeHtml(match.teamLabel)}"
+        >
+      </label>
+
+      ${mode === "results"
+        ? `
+          <label>
+            <span>Ergebnis</span>
+            <input
+              type="text"
+              inputmode="numeric"
+              data-override-field="score"
+              value="${escapeHtml(resultValue)}"
+              placeholder="z. B. 24:25"
+            >
+          </label>
+        `
+        : `
+          <label>
+            <span>Uhrzeit</span>
+            <input
+              type="text"
+              data-override-field="time"
+              value="${escapeHtml(rendered.time)}"
+              placeholder="z. B. 15:30"
+            >
+          </label>
+        `}
+
+      <label>
+        <span>Team rechts</span>
+        <input
+          type="text"
+          data-override-field="opponent"
+          value="${escapeHtml(rendered.opponent)}"
+          placeholder="${escapeHtml(match.opponent)}"
+        >
+      </label>
+
+      <button class="override-reset" type="button">Zurücksetzen</button>
+    </div>
+  `;
+}
+
 function slideCard(slide, mode) {
   const article = document.createElement("article");
   article.className = "slide-card";
@@ -491,24 +623,109 @@ function slideCard(slide, mode) {
         <h2>${escapeHtml(slide.title)}</h2>
         <p>${slide.meta.map(escapeHtml).join(" · ")}</p>
       </div>
-      <button class="download" type="button" disabled>PNG herunterladen</button>
+      <div class="slide-card__actions">
+        <button class="override-toggle" type="button">Overrides bearbeiten</button>
+        <button class="download" type="button" disabled>PNG herunterladen</button>
+      </div>
     </div>
+
+    <div class="override-panel" hidden>
+      <div class="override-panel__hint">
+        Leer lassen bzw. zurücksetzen = Originalwert aus handball.net verwenden.
+      </div>
+      ${slide.matches.map((match) => renderOverrideRow(match, mode)).join("")}
+    </div>
+
     <div class="preview-wrap">
       <iframe title="${escapeHtml(slide.title)}"></iframe>
     </div>
   `;
 
-  const button = article.querySelector(".download");
+  const downloadButton = article.querySelector(".download");
+  const overrideToggle = article.querySelector(".override-toggle");
+  const overridePanel = article.querySelector(".override-panel");
   const iframe = article.querySelector("iframe");
 
+  let refreshTimer = null;
+
+  const refreshPreview = () => {
+    downloadButton.disabled = true;
+    iframe.srcdoc = renderSlideDocument({
+      ...slide,
+      matches: slide.matches.map(applyOverridesToRenderedMatch)
+    }, mode);
+  };
+
+  const scheduleRefresh = () => {
+    clearTimeout(refreshTimer);
+    refreshTimer = setTimeout(refreshPreview, 120);
+  };
+
   iframe.addEventListener("load", () => {
-    button.disabled = false;
-  }, { once: true });
+    downloadButton.disabled = false;
+  });
 
-  iframe.srcdoc = renderSlideDocument(slide, mode);
+  overrideToggle.addEventListener("click", () => {
+    const willOpen = overridePanel.hidden;
+    overridePanel.hidden = !willOpen;
+    overrideToggle.textContent = willOpen
+      ? "Overrides schließen"
+      : "Overrides bearbeiten";
+  });
 
-  button.addEventListener("click", () => {
-    downloadPng(button, iframe, slide.filename);
+  overridePanel.addEventListener("input", (event) => {
+    const input = event.target.closest("[data-override-field]");
+    if (!input) return;
+
+    const row = input.closest(".override-row");
+    const match = slide.matches.find((item) => String(item.id) === row?.dataset.matchId);
+    if (!match) return;
+
+    const field = input.dataset.overrideField;
+    const accepted = updateMatchOverride(match, field, input.value);
+
+    input.classList.toggle("is-invalid", !accepted);
+
+    if (accepted) {
+      scheduleRefresh();
+    }
+  });
+
+  overridePanel.addEventListener("click", (event) => {
+    const resetButton = event.target.closest(".override-reset");
+    if (!resetButton) return;
+
+    const row = resetButton.closest(".override-row");
+    const match = slide.matches.find((item) => String(item.id) === row?.dataset.matchId);
+    if (!match) return;
+
+    matchOverrides.delete(String(match.id));
+
+    const teamInput = row.querySelector('[data-override-field="teamLabel"]');
+    const opponentInput = row.querySelector('[data-override-field="opponent"]');
+    const timeInput = row.querySelector('[data-override-field="time"]');
+    const scoreInput = row.querySelector('[data-override-field="score"]');
+
+    if (teamInput) teamInput.value = match.teamLabel;
+    if (opponentInput) opponentInput.value = match.opponent;
+    if (timeInput) timeInput.value = match.time;
+    if (scoreInput) {
+      scoreInput.value = match.ownScore !== null && match.opponentScore !== null
+        ? `${match.ownScore}:${match.opponentScore}`
+        : "";
+    }
+
+    row.querySelectorAll(".is-invalid").forEach((element) => {
+      element.classList.remove("is-invalid");
+    });
+
+    refreshPreview();
+  });
+
+  refreshPreview();
+
+  downloadButton.addEventListener("click", () => {
+    downloadPng(downloadButton, iframe, slide.filename);
   });
 
   return article;

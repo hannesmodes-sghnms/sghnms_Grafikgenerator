@@ -58,3 +58,10 @@ public/assets/fonts/BebasNeue-Bold.ttf
 public/assets/headlines/*.svg
 public/assets/canva/*
 ```
+
+
+## Overrides ab v22
+
+Nach dem Generieren eines Slides kann pro Spiel über **Overrides bearbeiten** der sichtbare Teamname links, die Uhrzeit bzw. das Ergebnis und der Teamname rechts manuell überschrieben werden. Die Änderungen gelten sofort für Vorschau und PNG-Export.
+
+Der PNG-Export wurde außerdem für GitHub Pages korrigiert: Der im iframe erzeugte Blob wird vor dem Download in den JavaScript-Kontext der Hauptseite übernommen.
