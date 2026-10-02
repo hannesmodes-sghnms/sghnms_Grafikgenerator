@@ -18,6 +18,14 @@
   font-display: block;
 }
 
+@font-face {
+  font-family: "Bebas Neue";
+  src: url("/assets/fonts/BebasNeue-Bold.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 700;
+  font-display: block;
+}
+
 :root {
   --canvas-width: 1122px;
   --canvas-height: 1402px;
@@ -25,6 +33,13 @@
   --score-red: #bf0b0f;
   --copy-blue: #0d2f69;
   --copy-grey: #545454;
+
+  /* Canva Drop: #001f44 / Blur 0 / Transparenz 35.
+   * Offset 54 ist ein Canva-Regler, kein CSS-Pixelwert. 8 px bildet
+   * die sichtbare Wirkung bei dieser Headline-Größe deutlich näher ab. */
+  --headline-drop-x: 8px;
+  --headline-drop-y: 8px;
+  --headline-drop-color: rgba(0, 31, 68, 0.65);
 }
 
 * {
@@ -53,6 +68,7 @@ body {
   overflow: hidden;
   color: #fff;
   font-family: "Bebas Neue", sans-serif;
+  font-synthesis: none;
   background-color: #071f53;
   background-image:
     url("/assets/sghnms_images/sghnms_bg.png"),
@@ -112,8 +128,7 @@ body {
 }
 
 /*
- * Headline-Geometrie aus der Canva-Referenz:
- * feste Box, nicht vom Karten-Count abhängig.
+ * Headline: feste Canva-Geometrie plus Drop-Effekt.
  */
 .title-wrap {
   position: absolute;
@@ -139,16 +154,16 @@ body {
   text-transform: uppercase;
   text-align: center;
   white-space: nowrap;
-  transform: translate(-50%, -50%);
   transform: rotate(-3.95deg);
   transform-origin: center center;
-  text-shadow: 4px 4px 0 rgba(0, 31, 68, 0.35);
+  text-shadow:
+    var(--headline-drop-x)
+    var(--headline-drop-y)
+    0
+    var(--headline-drop-color);
 }
 
-.slide-title[data-title="HEIMSPIELE"] {
-  font-size: 128px;
-}
-
+.slide-title[data-title="HEIMSPIELE"],
 .slide-title[data-title="ERGEBNISSE"] {
   font-size: 128px;
 }
@@ -177,10 +192,6 @@ body {
 .edo-umlaut::before { left: 0.29em; }
 .edo-umlaut::after { left: 0.52em; }
 
-/*
- * Meta-Bar: feste Position wie Canva.
- * Das exportierte Asset liefert Rundung, Kontur und #001f44.
- */
 .meta-bar {
   position: absolute;
   top: 309px;
@@ -199,11 +210,10 @@ body {
   color: #fff;
   font-size: 42px;
   line-height: 1;
-  font-weight: 400;
+  font-weight: 700;
   letter-spacing: 0.008em;
   white-space: nowrap;
   text-transform: uppercase;
-  -webkit-text-stroke: 0.55px currentColor;
 }
 
 .meta-dot {
@@ -214,13 +224,14 @@ body {
 }
 
 /*
- * Karten starten immer an derselben Y-Position.
- * Nur die gesamte Canva-Kartengruppe wird bei vielen Spielen skaliert.
+ * MATCH-CARD ARCHITEKTUR
  *
- * Wichtig: match-card.png ist 1036 x 211 px, aber die sichtbare
- * weiße Fläche liegt laut Alpha-Bounding-Box nur bei y=14..210.
- * Kinder werden deshalb an dieser sichtbaren Fläche ausgerichtet,
- * nicht an der kompletten 211-px-Box.
+ * Die weiße Card ist 1036 x 211.
+ * Trapez und VS sind jeweils 176 px hoch. Deshalb gibt es eine eigene
+ * 176-px Content-Rail, die exakt in der 211-px Card zentriert wird.
+ *
+ * Wichtig: Das Card-Scaling bleibt auf dem kompletten Komponentenblock.
+ * Die Typo-Größen unten sind deshalb die unskalierten Canva-Basiswerte.
  */
 .matches {
   position: absolute;
@@ -242,57 +253,77 @@ body {
 
 .match-card {
   position: absolute;
-  top: 0;
-  left: 0;
+  inset: 0;
   width: 1036px;
   height: 211px;
-  --card-visible-top: 14px;
-  --card-visible-height: 196px;
-  --card-visible-left: 12px;
-  --card-visible-right: 15px;
-  position: absolute;
-  inset: 0;
   padding: 0;
   color: var(--copy-blue);
-  background: url("/assets/canva/match-card.png") center/100% 100% no-repeat;
   transform: scale(var(--card-scale));
   transform-origin: top left;
 }
 
+.match-card-bg {
+  position: absolute;
+  inset: 0;
+  width: 1036px;
+  height: 211px;
+  display: block;
+  pointer-events: none;
+  user-select: none;
+}
+
+.match-card-rail {
+  position: absolute;
+  left: 0;
+  top: 17.5px;
+  width: 1036px;
+  height: 176px;
+}
+
+/* Team */
 .team-box {
   position: absolute;
-  left: 18px;
-  top: calc(var(--card-visible-top) + (var(--card-visible-height) - 166px) / 2);
-  width: 250px;
-  height: 166px;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
+  left: 14px;
+  top: 0;
+  width: 260px;
+  height: 176px;
+}
+
+.team-shape {
+  position: absolute;
+  inset: 0;
+  width: 260px;
+  height: 176px;
+  display: block;
+  pointer-events: none;
+  user-select: none;
 }
 
 .team-label {
+  position: absolute;
+  left: 0;
+  top: 0;
   width: 246px;
-  height: 166px;
+  height: 176px;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 12px 28px 8px 18px;
-  background: url("/assets/canva/team-tag.png") center/100% 100% no-repeat;
+  padding: 10px 20px 8px 12px;
   color: #fff;
-  font-size: 52px;
+  font-size: 77.48px;
   line-height: 0.94;
-  font-weight: 400;
+  font-weight: 700;
   text-align: center;
   text-transform: uppercase;
-  -webkit-text-stroke: 0.55px currentColor;
 }
 
+/* Uhrzeit / Ergebnis */
 .center-box {
   position: absolute;
-  left: 297px;
-  top: calc(var(--card-visible-top) + (var(--card-visible-height) - 158px) / 2);
+  left: 318px;
+  top: 0;
   width: 245px;
-  height: 158px;
+  height: 176px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -303,31 +334,28 @@ body {
 
 .time {
   color: var(--copy-grey);
-  font-size: 133.727px;
+  font-size: 158px;
   line-height: 0.76;
-  font-weight: 400;
+  font-weight: 700;
   letter-spacing: -0.035em;
   white-space: nowrap;
-  -webkit-text-stroke: 0.35px currentColor;
 }
 
 .time-label {
-  margin-top: -2px;
+  margin-top: -4px;
   color: var(--copy-grey);
-  font-size: 63.3008px;
+  font-size: 75px;
   line-height: 0.8;
-  font-weight: 400;
-  -webkit-text-stroke: 0.45px currentColor;
+  font-weight: 700;
 }
 
 .score {
   color: var(--score-red);
-  font-size: 116px;
+  font-size: 137px;
   line-height: 0.82;
-  font-weight: 400;
+  font-weight: 700;
   letter-spacing: -0.035em;
   white-space: nowrap;
-  -webkit-text-stroke: 0.45px currentColor;
 }
 
 .score-separator {
@@ -335,68 +363,63 @@ body {
   margin: 0 4px;
 }
 
+/* VS: Das gelieferte CanvaVS.png enthält Kreis, Linien UND Text.
+ * Der Kreis selbst liegt im PNG bei x=32..87, also Mittelpunkt x=59.5.
+ * Der PNG-Mittelpunkt wäre x=54.5. Deshalb wird das Asset 5 px nach links
+ * versetzt, damit DER KREIS (nicht das Canvas) auf dem Sollmittelpunkt sitzt.
+ * Vertikal liegt der Kreismittelpunkt bei y=86 statt Canvas-Mitte 88,
+ * daher +2 px nach unten. */
 .vs-box {
   position: absolute;
-  left: 562px;
-  top: calc(var(--card-visible-top) + (var(--card-visible-height) - 176px) / 2);
+  left: 601px;
+  top: 0;
   width: 109px;
   height: 176px;
-  background: url("/assets/canva/vs-divider.png") center/contain no-repeat;
 }
 
-.vs-box span {
+.vs-asset {
   position: absolute;
-  left: calc(50% - 1px);
-  top: calc(50% + 1px);
-  width: 36px;
-  height: 45px;
-  color: #fff;
-  font-size: 38.25px;
-  line-height: 45.35px;
-  font-weight: 400;
-  text-align: center;
-  white-space: nowrap;
-  transform: translate(-50%, -50%);
-  -webkit-text-stroke: 0.35px currentColor;
+  left: -5px;
+  top: 2px;
+  width: 109px;
+  height: 176px;
+  display: block;
+  pointer-events: none;
+  user-select: none;
 }
 
+/* Gegner */
 .opponent-box {
   position: absolute;
-  left: 688px;
-  top: calc(var(--card-visible-top) + (var(--card-visible-height) - 170px) / 2);
-  width: 320px;
-  height: 170px;
+  left: 724px;
+  top: 0;
+  width: 300px;
+  height: 176px;
   min-width: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 6px 16px 6px 16px;
+  padding: 6px 8px;
   color: var(--copy-blue);
-  font-size: 48px;
+  font-size: 64px;
   line-height: 0.94;
-  font-weight: 400;
+  font-weight: 700;
   text-align: center;
   text-transform: uppercase;
   word-break: normal;
   overflow-wrap: normal;
   hyphens: none;
-  -webkit-text-stroke: 0.4px currentColor;
 }
 
-.opponent-box--md { font-size: 44px; }
-.opponent-box--lg { font-size: 41px; }
-.opponent-box--xl { font-size: 38px; }
-.opponent-box--xxl { font-size: 35px; }
+.opponent-box--md { font-size: 60px; }
+.opponent-box--lg { font-size: 56px; }
+.opponent-box--xl { font-size: 52px; }
+.opponent-box--xxl { font-size: 48px; }
 
-/*
- * Bei kompakten Slides wird die ganze Karte skaliert.
- * Dadurch bleiben alle Proportionen wie in Canva erhalten.
- */
+/* Bei sehr vielen Spielen bleibt die bisherige Skalierung bestehen. */
 .match-count-6 .slide-title,
 .match-count-7 .slide-title,
 .match-count-8 .slide-title,
 .match-count-9 .slide-title {
   font-size: 112px;
 }
-
-

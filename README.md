@@ -1,42 +1,48 @@
-# SGHNMS Handball Social Generator v6
+# SGHNMS Handball Social Generator v11
 
-Erzeugt Spieltags- und Ergebnisgrafiken aus dem handball.net Vereins-Spielplan.
+## v11 – Match-Card neu vermessen
 
-## v6: feste Canva-Geometrie
+Diese Version verwendet die separat aus Canva gelieferten Original-Assets:
 
-Diese Version arbeitet nicht mehr mit einem frei responsiven Slide-Layout. Die wesentlichen Elemente liegen auf festen Koordinaten der 1122 × 1402 Canva-Vorlage:
+- `public/assets/canva/match-card.png` – 1036 × 211 px
+- `public/assets/canva/team-tag.png` – 260 × 176 px
+- `public/assets/canva/vs-divider.png` – 109 × 176 px
 
-- Headline: feste Box und feste Rotation
-- Meta-Bar: feste Position
-- Match-Stack: fester Startpunkt
-- Match-Card: Canva-Asset in Originalproportionen
-- bei mehreren Spielen wird die komplette Karte skaliert, nicht jede Spalte separat
+Die Match-Card besitzt jetzt eine eigene **176-px Content-Rail**, die in der 211-px weißen Card vertikal zentriert wird. Trapez, Uhrzeit/Ergebnis, VS und Gegner beziehen sich auf diese Rail statt auf unterschiedliche Containerhöhen.
 
-Damit bleiben Teamfeld, Zeitblock, VS-Trenner und Gegnerblock proportional zusammen.
+### VS-Geometrie
 
-## Designfarben
+Beim gelieferten `CanvaVS.png` liegt der blaue Kreis nicht im geometrischen Mittelpunkt des 109 × 176 Canvas. Der Kreis hat ungefähr die Bounding-Box `x=32..87`, `y=58..114`; sein Mittelpunkt liegt damit bei `x=59.5`, `y=86`. Das Asset wird deshalb gegenüber seiner Layout-Zone um `-5px / +2px` korrigiert.
 
-- Trapez / Meta-Bar: `#001f44`
-- Ergebnis: `#bf0b0f`
-- Zeit: `#5f5f61`
+### Bebas Neue Bold
 
-## Enthaltene Canva-Assets
+v11 erwartet zusätzlich:
 
-- `public/assets/canva/slide-bg.png`
-- `public/assets/canva/meta-bar.png`
-- `public/assets/canva/match-card.png`
-- `public/assets/canva/team-tag.png`
-- `public/assets/canva/vs-divider.png`
-- `public/assets/canva/meta-dot.png`
+```text
+public/assets/fonts/BebasNeue-Bold.ttf
+```
 
-## Eigene Assets
+Regular und Bold werden getrennt per `@font-face` registriert. Für Teamname, Uhrzeit, Gegner und Meta-Zeile wird echtes `font-weight: 700` verwendet; `font-synthesis: none` verhindert künstliches Browser-Bolding.
 
-Empfohlen / erwartet:
+### Headline Drop
 
-- `public/assets/fonts/edo.ttf`
-- `public/assets/sghnms_images/sghnms_bg.png`
+Der Edo-Headline ist der Canva-Drop-Effekt ergänzt:
 
-Wenn `sghnms_bg.png` vorhanden ist, wird dieses als primärer Hintergrund verwendet. Das extrahierte Canva-Background dient als Fallback.
+- Farbe `#001f44`
+- Blur `0`
+- Transparenz `35` → CSS-Deckkraft ca. `65 %`
+- Offset als CSS-Näherung über `8px / 8px`
+
+Der Canva-Offsetwert `54` ist ein UI-Regler und kein direkt übertragbarer Pixelwert. Die CSS-Werte sind deshalb bewusst als Variablen im oberen Bereich von `slide.css` hinterlegt.
+
+## Weitere benötigte eigene Assets
+
+```text
+public/assets/fonts/edo.ttf
+public/assets/fonts/BebasNeue-Regular.woff2
+public/assets/fonts/BebasNeue-Bold.ttf
+public/assets/sghnms_images/sghnms_bg.png
+```
 
 ## Start
 
@@ -44,24 +50,3 @@ Wenn `sghnms_bg.png` vorhanden ist, wird dieses als primärer Hintergrund verwen
 npm install
 npm start
 ```
-
-Danach Port 3000 öffnen.
-
-## Font-Fix v7
-
-Bebas Neue wird nicht mehr über `@fontsource` eingebunden. Die Slide-HTML lädt die Schrift ausschließlich über `@font-face` aus `public/assets/fonts/`. Dadurch kann im Browser unter **Rendered Fonts** eindeutig `Bebas Neue` geprüft werden.
-
-## v8 – Canva-Feinjustierung Uhrzeit / VS
-
-- Uhrzeit auf die Canva-Größe `133.727 px` angehoben.
-- `UHR` auf `63.3008 px` gesetzt und vertikal enger an die Uhrzeit gezogen.
-- Zeitfarbe exakt auf `#545454` gesetzt.
-- VS-Asset um 11 px an die originale horizontale Position verschoben.
-- `Vs` nutzt jetzt die aus dem Canva-Editor ausgelesene Textbox innerhalb des Original-Assets (`38.25 px`).
-- Restliches Kartenlayout bleibt gegenüber v7 unverändert.
-## v10 – sichtbare PNG-Fläche als Referenz
-
-`match-card.png` ist 1036 × 211 px, die sichtbare weiße Kartenfläche beginnt wegen Transparenz aber erst bei `y=14` und reicht bis `y=210`. Teamblock, Uhrzeit/UHR, VS und Gegner werden deshalb jetzt relativ zu dieser sichtbaren 196-px-Fläche vertikal zentriert.
-
-Zusätzlich ist der VS-Text minimal auf den optischen Mittelpunkt des blauen Kreises korrigiert.
-

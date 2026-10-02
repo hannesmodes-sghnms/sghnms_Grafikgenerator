@@ -398,12 +398,18 @@ function renderMatchCard(match, mode) {
   return `
     <div class="match-card-shell">
       <div class="match-card ${mode === "results" ? "match-card--results" : ""}">
-        <div class="team-box">
-          <div class="team-label fit-text fit-text--team">${escapeHtml(match.teamLabel)}</div>
+        <img class="match-card-bg" src="/assets/canva/match-card.png" alt="" aria-hidden="true">
+        <div class="match-card-rail">
+          <div class="team-box">
+            <img class="team-shape" src="/assets/canva/team-tag.png" alt="" aria-hidden="true">
+            <div class="team-label fit-text fit-text--team">${escapeHtml(match.teamLabel)}</div>
+          </div>
+          <div class="center-box">${center}</div>
+          <div class="vs-box" aria-hidden="true">
+            <img class="vs-asset" src="/assets/canva/vs-divider.png" alt="">
+          </div>
+          <div class="opponent-box ${opponentClass} fit-text fit-text--opponent">${renderBreakableName(match.opponent)}</div>
         </div>
-        <div class="center-box">${center}</div>
-        <div class="vs-box" aria-hidden="true"><span>VS</span></div>
-        <div class="opponent-box ${opponentClass} fit-text fit-text--opponent">${renderBreakableName(match.opponent)}</div>
       </div>
     </div>
   `;
