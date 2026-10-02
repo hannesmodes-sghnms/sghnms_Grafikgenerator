@@ -70,3 +70,15 @@ Die Brush-Headlines werden nicht mehr live mit Edo gerendert, sondern als origin
 
 Dadurch sind Umlaut, Neigung und Drop-Effekt exakt im Asset enthalten und browserunabhängig.
 Die dynamischen Texte verwenden weiterhin `public/assets/fonts/BebasNeue-Bold.ttf`.
+
+## v14
+
+Ausgehend von v13 wurden ausschließlich diese Layoutpunkte korrigiert:
+
+- transparenter Rand der drei Headline-SVGs wird pro Asset kompensiert
+- Abstand zwischen Uhrzeit und `UHR` erhöht
+- Gegner-Schriftgrößen an die Canva-Referenz angepasst
+- Trapez-Asset ca. 10 % größer dargestellt, um den vertikalen Abstand zur weißen Karte zu reduzieren
+
+VS, Match-Card-Geometrie, Meta-Bar und übrige Positionen bleiben unverändert gegenüber v13.
+

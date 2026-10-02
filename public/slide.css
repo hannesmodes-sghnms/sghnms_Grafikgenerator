@@ -139,6 +139,21 @@ body {
   user-select: none;
 }
 
+/* v14: Die Canva-SVGs haben unterschiedlich viel transparenten Rand.
+ * Die sichtbare Unterkante der drei Headlines wird deshalb angeglichen,
+ * ohne Meta-Bar oder restliches Layout zu verschieben. */
+.slide-title-image[src$="headline-away.svg"] {
+  transform: translateY(7px);
+}
+
+.slide-title-image[src$="headline-home.svg"] {
+  transform: translateY(5px);
+}
+
+.slide-title-image[src$="headline-results.svg"] {
+  transform: translateY(-3px);
+}
+
 .slide-title-fallback {
   margin-top: 96px;
   color: #fff;
@@ -252,9 +267,10 @@ body {
 
 .team-shape {
   position: absolute;
-  inset: 0;
-  width: 260px;
-  height: 176px;
+  left: -6px;
+  top: -7px;
+  width: 286px;
+  height: 194px;
   display: block;
   pointer-events: none;
   user-select: none;
@@ -303,7 +319,7 @@ body {
 }
 
 .time-label {
-  margin-top: -4px;
+  margin-top: 3px;
   color: var(--copy-grey);
   font-size: 75px;
   line-height: 0.8;
@@ -362,7 +378,7 @@ body {
   justify-content: center;
   padding: 6px 8px;
   color: var(--copy-blue);
-  font-size: 64px;
+  font-size: 76px;
   line-height: 0.94;
   font-weight: 700;
   text-align: center;
@@ -372,8 +388,8 @@ body {
   hyphens: none;
 }
 
-.opponent-box--md { font-size: 60px; }
-.opponent-box--lg { font-size: 56px; }
-.opponent-box--xl { font-size: 52px; }
-.opponent-box--xxl { font-size: 48px; }
+.opponent-box--md { font-size: 71px; }
+.opponent-box--lg { font-size: 66px; }
+.opponent-box--xl { font-size: 61px; }
+.opponent-box--xxl { font-size: 57px; }
 
