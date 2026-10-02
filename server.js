@@ -487,7 +487,38 @@ function renderSlideHtml(slide, mode) {
 
         document.querySelectorAll(".fit-text--opponent").forEach((element) => {
           element.dataset.baseSize = element.dataset.baseSize || window.getComputedStyle(element).fontSize;
-          shrinkToFit(element, { minSize: 20, step: 1 });
+
+          const computed = window.getComputedStyle(element);
+          const baseSize = parseFloat(element.dataset.baseSize || computed.fontSize);
+          const baseLine = parseFloat(computed.lineHeight) || baseSize * 0.9;
+
+          let fontSize = baseSize;
+          let lineHeight = baseLine;
+          let guard = 0;
+
+          element.style.fontSize = fontSize + "px";
+          element.style.lineHeight = lineHeight + "px";
+
+          const lineCount = () => {
+            const currentLine = parseFloat(window.getComputedStyle(element).lineHeight) || lineHeight;
+            return Math.max(1, Math.round(element.scrollHeight / currentLine));
+          };
+
+          while (guard < 140 && fontSize > 20) {
+            const fitsHeight = element.scrollHeight <= element.clientHeight + 0.5;
+            const fitsWidth = element.scrollWidth <= element.clientWidth + 0.5;
+            const lines = lineCount();
+
+            if (fitsHeight && fitsWidth && lines <= 2) {
+              break;
+            }
+
+            fontSize -= 1;
+            lineHeight = Math.max(fontSize * 0.9, 20);
+            element.style.fontSize = fontSize + "px";
+            element.style.lineHeight = lineHeight + "px";
+            guard += 1;
+          }
         });
       }
 

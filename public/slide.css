@@ -118,7 +118,7 @@ body {
  */
 .title-wrap {
   position: absolute;
-  top: 22px;
+  top: 8px;
   left: 0;
   width: 1122px;
   height: 359px;
@@ -143,15 +143,15 @@ body {
  * Die sichtbare Unterkante der drei Headlines wird deshalb angeglichen,
  * ohne Meta-Bar oder restliches Layout zu verschieben. */
 .slide-title-image[src$="headline-away.svg"] {
-  transform: translateY(7px);
+  transform: translateY(1px);
 }
 
 .slide-title-image[src$="headline-home.svg"] {
-  transform: translateY(5px);
+  transform: translateY(-1px);
 }
 
 .slide-title-image[src$="headline-results.svg"] {
-  transform: translateY(-3px);
+  transform: translateY(-9px);
 }
 
 .slide-title-fallback {
@@ -286,9 +286,10 @@ body {
   align-items: center;
   justify-content: center;
   padding: 10px 20px 8px 12px;
+  white-space: nowrap;
   color: #fff;
   font-size: 77.48px;
-  line-height: 0.94;
+  line-height: 0.9;
   font-weight: 700;
   text-align: center;
   text-transform: uppercase;
@@ -368,18 +369,18 @@ body {
 /* Gegner */
 .opponent-box {
   position: absolute;
-  left: 724px;
+  left: 722px;
   top: 0;
-  width: 300px;
+  width: 308px;
   height: 176px;
   min-width: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 6px 8px;
+  padding: 4px 6px;
   color: var(--copy-blue);
   font-size: 76px;
-  line-height: 0.94;
+  line-height: 0.9;
   font-weight: 700;
   text-align: center;
   text-transform: uppercase;

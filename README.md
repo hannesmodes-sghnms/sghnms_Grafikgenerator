@@ -71,7 +71,7 @@ Die Brush-Headlines werden nicht mehr live mit Edo gerendert, sondern als origin
 Dadurch sind Umlaut, Neigung und Drop-Effekt exakt im Asset enthalten und browserunabhängig.
 Die dynamischen Texte verwenden weiterhin `public/assets/fonts/BebasNeue-Bold.ttf`.
 
-## v14
+## v15
 
 Ausgehend von v13 wurden ausschließlich diese Layoutpunkte korrigiert:
 
