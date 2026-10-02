@@ -303,6 +303,9 @@ body {
   user-select: none;
 }
 
+/* Team label: short labels (e.g. WJE 2) use the full Canva size.
+ * Longer labels (e.g. FRAUEN 2 / HERREN 1) get extra inner margins and a
+ * smaller starting size, then JS may shrink further if needed. */
 .team-label {
   position: absolute;
   left: 0;
@@ -320,6 +323,11 @@ body {
   font-weight: 700;
   text-align: center;
   text-transform: uppercase;
+}
+
+.team-label--long {
+  padding: 10px 30px 8px 24px;
+  font-size: 63px;
 }
 
 /* Uhrzeit / Ergebnis */

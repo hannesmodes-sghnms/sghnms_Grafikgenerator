@@ -385,6 +385,11 @@ function renderMatchCard(match, mode) {
       ? `<div class="score"><span class="score-number">${escapeHtml(match.ownScore)}</span><span class="score-separator">:</span><span class="score-number">${escapeHtml(match.opponentScore)}</span></div>`
       : `<div class="time">${escapeHtml(match.time)}</div><div class="time-label">UHR</div>`;
 
+  const teamLabelText = String(match.teamLabel || "").trim();
+  const isLongTeamLabel = teamLabelText.length > 5;
+  const teamLabelClasses = ["team-label", "fit-text", "fit-text--team"];
+  if (isLongTeamLabel) teamLabelClasses.push("team-label--long");
+
   return `
     <div class="match-card-shell">
       <div class="match-card ${mode === "results" ? "match-card--results" : ""}">
@@ -392,7 +397,7 @@ function renderMatchCard(match, mode) {
         <div class="match-card-rail">
           <div class="team-box">
             <img class="team-shape" src="/assets/canva/team-tag.png" alt="" aria-hidden="true">
-            <div class="team-label fit-text fit-text--team">${escapeHtml(match.teamLabel)}</div>
+            <div class="${teamLabelClasses.join(" ")}">${escapeHtml(match.teamLabel)}</div>
           </div>
           <div class="center-box">${center}</div>
           <div class="vs-box" aria-hidden="true">
@@ -470,8 +475,20 @@ function renderSlideHtml(slide, mode) {
 
       function fitTextBlocks() {
         document.querySelectorAll(".fit-text--team").forEach((element) => {
-          element.dataset.baseSize = element.dataset.baseSize || window.getComputedStyle(element).fontSize;
-          shrinkToFit(element, { minSize: 22, step: 1 });
+          const rawText = (element.textContent || "").replace(/\s+/g, " ").trim();
+          const isLongLabel = rawText.length > 5;
+
+          // Start from the CSS-defined base size every time so shorter labels keep
+          // the full size while longer labels get an intentionally smaller base.
+          element.style.removeProperty("font-size");
+          element.style.removeProperty("line-height");
+
+          const computed = window.getComputedStyle(element);
+          const cssBaseSize = parseFloat(computed.fontSize) || 77.48;
+          const targetBaseSize = isLongLabel ? Math.min(cssBaseSize, 63) : cssBaseSize;
+
+          element.dataset.baseSize = String(targetBaseSize);
+          shrinkToFit(element, { minSize: isLongLabel ? 40 : 52, step: 1 });
         });
 
         document.querySelectorAll(".fit-text--opponent").forEach((element) => {
