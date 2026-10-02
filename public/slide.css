@@ -105,36 +105,30 @@ body {
 }
 
 .match-count-1,
-.match-count-2 {
-  --opponent-base-size: 47.4px;
-}
-
-.match-count-3 {
-  --opponent-base-size: 49.4px;
-}
-
+.match-count-2,
+.match-count-3,
 .match-count-4 {
-  --opponent-base-size: 51.6px;
+  --opponent-base-size: 45.7px;
 }
 
 .match-count-5 {
-  --opponent-base-size: 50.9px;
+  --opponent-base-size: 44px;
 }
 
 .match-count-6 {
-  --opponent-base-size: 53.6px;
+  --opponent-base-size: 42.5px;
 }
 
 .match-count-7 {
-  --opponent-base-size: 55.5px;
+  --opponent-base-size: 41px;
 }
 
 .match-count-8 {
-  --opponent-base-size: 56.8px;
+  --opponent-base-size: 39.5px;
 }
 
 .match-count-9 {
-  --opponent-base-size: 57.4px;
+  --opponent-base-size: 38px;
 }
 
 .slide-inner {
@@ -176,7 +170,7 @@ body {
  * Die sichtbare Unterkante der drei Headlines wird deshalb angeglichen,
  * ohne Meta-Bar oder restliches Layout zu verschieben. */
 .slide-title-image[src$="headline-away.svg"] {
-  transform: translateY(8px);
+  transform: translateY(20px);
 }
 
 .slide-title-image[src$="headline-home.svg"] {
@@ -419,10 +413,11 @@ body {
   width: 100%;
   max-width: 100%;
   text-align: center;
-  font-size: var(--opponent-base-size, 47.4px);
+  font-size: var(--opponent-base-size, 45.7px);
   line-height: 0.9;
   word-break: normal;
   overflow-wrap: break-word;
+  white-space: normal;
   hyphens: none;
 }
 

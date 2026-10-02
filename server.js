@@ -361,15 +361,6 @@ function renderMeta(meta) {
     .join("");
 }
 
-function opponentSizeClass(name = "") {
-  const length = String(name).trim().length;
-  if (length >= 40) return "opponent-box--xxl";
-  if (length >= 32) return "opponent-box--xl";
-  if (length >= 24) return "opponent-box--lg";
-  if (length >= 18) return "opponent-box--md";
-  return "";
-}
-
 function headlineAssetForTitle(title = "") {
   const normalized = String(title).toUpperCase();
 
@@ -394,8 +385,6 @@ function renderMatchCard(match, mode) {
       ? `<div class="score"><span class="score-number">${escapeHtml(match.ownScore)}</span><span class="score-separator">:</span><span class="score-number">${escapeHtml(match.opponentScore)}</span></div>`
       : `<div class="time">${escapeHtml(match.time)}</div><div class="time-label">UHR</div>`;
 
-  const opponentClass = opponentSizeClass(match.opponent);
-
   return `
     <div class="match-card-shell">
       <div class="match-card ${mode === "results" ? "match-card--results" : ""}">
@@ -409,7 +398,7 @@ function renderMatchCard(match, mode) {
           <div class="vs-box" aria-hidden="true">
             <img class="vs-asset" src="/assets/canva/vs-divider.png" alt="">
           </div>
-          <div class="opponent-box ${opponentClass}"><div class="opponent-text fit-text fit-text--opponent">${renderBreakableName(match.opponent)}</div></div>
+          <div class="opponent-box"><div class="opponent-text fit-text fit-text--opponent">${renderBreakableName(match.opponent)}</div></div>
         </div>
       </div>
     </div>
@@ -486,21 +475,13 @@ function renderSlideHtml(slide, mode) {
         });
 
         document.querySelectorAll(".fit-text--opponent").forEach((element) => {
-          /*
-           * IMPORTANT:
-           * Never use the current computed font-size as the next base size.
-           * fitTextBlocks() may run more than once. An inline size from a
-           * previous shrink pass must not become the new starting point.
-           */
+          // Always start from the CSS base size for this match count.
           element.style.removeProperty("font-size");
           element.style.removeProperty("line-height");
 
           const computed = window.getComputedStyle(element);
-          const cssBaseSize = parseFloat(
-            computed.getPropertyValue("--opponent-base-size") || computed.fontSize
-          );
+          const baseSize = parseFloat(computed.fontSize) || 45.7;
 
-          const baseSize = Number.isFinite(cssBaseSize) ? cssBaseSize : 47.4;
           let fontSize = baseSize;
           let lineHeight = fontSize * 0.9;
           let guard = 0;
@@ -510,30 +491,29 @@ function renderSlideHtml(slide, mode) {
             element.style.lineHeight = lineHeight + "px";
           };
 
-          const getLineCount = () => {
-            const currentLineHeight = parseFloat(window.getComputedStyle(element).lineHeight) || lineHeight;
-            /* Subtract a tiny tolerance to avoid rounding a 2-line block to 3. */
-            return Math.max(1, Math.ceil((element.scrollHeight - 1) / currentLineHeight));
+          const renderedLineCount = () => {
+            const range = document.createRange();
+            range.selectNodeContents(element);
+
+            const rects = [...range.getClientRects()]
+              .filter((rect) => rect.width > 0.5 && rect.height > 0.5)
+              .sort((a, b) => a.top - b.top || a.left - b.left);
+
+            const lineTops = [];
+            for (const rect of rects) {
+              if (!lineTops.some((top) => Math.abs(top - rect.top) < 2)) {
+                lineTops.push(rect.top);
+              }
+            }
+
+            return Math.max(1, lineTops.length);
           };
 
           applySize();
 
-          while (guard < 140 && fontSize > 18) {
-            const lines = getLineCount();
-            const hasUnbreakableOverflow = element.scrollWidth > element.clientWidth + 0.5;
-
-            /*
-             * Desired rule:
-             * 1 line at base size is fine.
-             * 2 lines at the SAME base size are also fine.
-             * Only shrink when it would need 3+ lines (or a single token
-             * physically cannot fit in the box).
-             */
-            if (lines <= 2 && !hasUnbreakableOverflow) {
-              break;
-            }
-
-            fontSize = Math.max(18, fontSize - 1);
+          // Rule: keep the base size for 1 OR 2 lines. Only shrink at 3+ lines.
+          while (guard < 120 && fontSize > 18 && renderedLineCount() > 2) {
+            fontSize = Math.max(18, fontSize - 0.5);
             lineHeight = fontSize * 0.9;
             applySize();
             guard += 1;
