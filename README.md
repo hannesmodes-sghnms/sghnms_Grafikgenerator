@@ -59,3 +59,9 @@ Bebas Neue wird nicht mehr über `@fontsource` eingebunden. Die Slide-HTML lädt
 - VS-Asset um 11 px an die originale horizontale Position verschoben.
 - `Vs` nutzt jetzt die aus dem Canva-Editor ausgelesene Textbox innerhalb des Original-Assets (`38.25 px`).
 - Restliches Kartenlayout bleibt gegenüber v7 unverändert.
+## v10 – sichtbare PNG-Fläche als Referenz
+
+`match-card.png` ist 1036 × 211 px, die sichtbare weiße Kartenfläche beginnt wegen Transparenz aber erst bei `y=14` und reicht bis `y=210`. Teamblock, Uhrzeit/UHR, VS und Gegner werden deshalb jetzt relativ zu dieser sichtbaren 196-px-Fläche vertikal zentriert.
+
+Zusätzlich ist der VS-Text minimal auf den optischen Mittelpunkt des blauen Kreises korrigiert.
+

@@ -216,6 +216,11 @@ body {
 /*
  * Karten starten immer an derselben Y-Position.
  * Nur die gesamte Canva-Kartengruppe wird bei vielen Spielen skaliert.
+ *
+ * Wichtig: match-card.png ist 1036 x 211 px, aber die sichtbare
+ * weiße Fläche liegt laut Alpha-Bounding-Box nur bei y=14..210.
+ * Kinder werden deshalb an dieser sichtbaren Fläche ausgerichtet,
+ * nicht an der kompletten 211-px-Box.
  */
 .matches {
   position: absolute;
@@ -241,6 +246,10 @@ body {
   left: 0;
   width: 1036px;
   height: 211px;
+  --card-visible-top: 14px;
+  --card-visible-height: 196px;
+  --card-visible-left: 12px;
+  --card-visible-right: 15px;
   position: absolute;
   inset: 0;
   padding: 0;
@@ -253,7 +262,7 @@ body {
 .team-box {
   position: absolute;
   left: 18px;
-  top: 22px;
+  top: calc(var(--card-visible-top) + (var(--card-visible-height) - 166px) / 2);
   width: 250px;
   height: 166px;
   display: flex;
@@ -281,7 +290,7 @@ body {
 .center-box {
   position: absolute;
   left: 297px;
-  top: 26px;
+  top: calc(var(--card-visible-top) + (var(--card-visible-height) - 158px) / 2);
   width: 245px;
   height: 158px;
   display: flex;
@@ -329,7 +338,7 @@ body {
 .vs-box {
   position: absolute;
   left: 562px;
-  top: 18px;
+  top: calc(var(--card-visible-top) + (var(--card-visible-height) - 176px) / 2);
   width: 109px;
   height: 176px;
   background: url("/assets/canva/vs-divider.png") center/contain no-repeat;
@@ -337,8 +346,8 @@ body {
 
 .vs-box span {
   position: absolute;
-  left: 50%;
-  top: 50%;
+  left: calc(50% - 1px);
+  top: calc(50% + 1px);
   width: 36px;
   height: 45px;
   color: #fff;
@@ -354,7 +363,7 @@ body {
 .opponent-box {
   position: absolute;
   left: 688px;
-  top: 20px;
+  top: calc(var(--card-visible-top) + (var(--card-visible-height) - 170px) / 2);
   width: 320px;
   height: 170px;
   min-width: 0;
@@ -391,5 +400,3 @@ body {
 }
 
 
-/* v9 alignment hotfix */
-.match-card--results .center-box { top: 32px; height: 148px; }
