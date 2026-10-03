@@ -316,3 +316,41 @@ body {
     flex-direction: column;
   }
 }
+
+.single-match-field[hidden] {
+  display: none;
+}
+
+.controls.controls--single {
+  grid-template-columns: repeat(4, minmax(0, 1fr)) auto;
+}
+
+.single-match-field select {
+  min-width: 260px;
+}
+
+.single-slide-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 6px;
+  color: #687185;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.logo-warning {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 9px;
+  background: #fff3d6;
+  color: #7a5200;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+@media (max-width: 1050px) {
+  .controls.controls--single {
+    grid-template-columns: 1fr 1fr;
+  }
+}

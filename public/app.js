@@ -1,9 +1,12 @@
 import { BRAND, TEAM_LABELS, VENUE_LABELS } from "./config.js";
+import { buildSingleSlide, hasLocalLogos, renderSingleSlideDocument, singleMatchOptionLabel } from "./single-match.js";
 
 const form = document.querySelector("#generator-form");
 const fromInput = document.querySelector("#from");
 const toInput = document.querySelector("#to");
 const modeInput = document.querySelector("#mode");
+const singleMatchField = document.querySelector("#single-match-field");
+const singleMatchInput = document.querySelector("#single-match");
 const submitButton = form.querySelector('button[type="submit"]');
 const status = document.querySelector("#status");
 const dataInfo = document.querySelector("#data-info");
@@ -12,6 +15,7 @@ const slides = document.querySelector("#slides");
 const BASE_HREF = new URL("./", window.location.href).href;
 
 let dataSet = null;
+let logoManifest = { generatedAt: null, clubs: {}, teams: {} };
 const matchOverrides = new Map();
 
 function isoDate(date) {
@@ -27,6 +31,33 @@ function setDefaultRange() {
   end.setDate(end.getDate() + 2);
   fromInput.value = isoDate(today);
   toInput.value = isoDate(end);
+}
+
+function refreshSingleMatchOptions() {
+  const isSingle = modeInput.value === "single";
+  singleMatchField.hidden = !isSingle;
+  form.classList.toggle("controls--single", isSingle);
+
+  if (!isSingle || !dataSet?.matches) return;
+
+  const from = fromInput.value;
+  const to = toInput.value;
+  const currentValue = singleMatchInput.value;
+
+  const options = dataSet.matches
+    .filter((match) => (!from || match.date >= from) && (!to || match.date <= to))
+    .map((match) => ({ match, label: singleMatchOptionLabel(match) }))
+    .filter((item) => item.label);
+
+  singleMatchInput.innerHTML = options.length
+    ? options.map(({ match, label }) =>
+        `<option value="${escapeHtml(match.id)}">${escapeHtml(label)}</option>`
+      ).join("")
+    : '<option value="">Keine passenden Spiele im Zeitraum</option>';
+
+  if (options.some(({ match }) => String(match.id) === currentValue)) {
+    singleMatchInput.value = currentValue;
+  }
 }
 
 function escapeHtml(value = "") {
@@ -731,6 +762,126 @@ function slideCard(slide, mode) {
   return article;
 }
 
+function singleSlideCard(rawMatch) {
+  const article = document.createElement("article");
+  article.className = "slide-card";
+
+  const own = ownTeam(rawMatch);
+  if (!own) return article;
+
+  const baseMatch = {
+    id: rawMatch.id,
+    teamLabel: own.teamLabel,
+    opponent: own.opponent?.name ?? "",
+    time: rawMatch.time,
+    ownScore: own.ownScore,
+    opponentScore: own.opponentScore
+  };
+
+  const makeSlide = () => buildSingleSlide(rawMatch, {
+    overrides: matchOverrides.get(String(rawMatch.id)) || {},
+    logoManifest
+  });
+
+  const firstSlide = makeSlide();
+
+  article.innerHTML = `
+    <div class="slide-card__header">
+      <div>
+        <h2>${escapeHtml(firstSlide?.headline || "Einzelspiel")}</h2>
+        <p>${escapeHtml(rawMatch.dateText)} · ${escapeHtml(rawMatch.time)} · ${escapeHtml(own.teamLabel)} vs. ${escapeHtml(own.opponent?.name || "")}</p>
+        <div class="single-slide-meta">
+          <span>${escapeHtml(rawMatch.competition || "")}</span>
+          <span>${escapeHtml(rawMatch.phase?.name || "")}</span>
+          <span>${escapeHtml(rawMatch.venue?.name || "")}</span>
+        </div>
+      </div>
+      <div class="slide-card__actions">
+        <button class="override-toggle" type="button">Overrides bearbeiten</button>
+        <button class="download" type="button" disabled>PNG herunterladen</button>
+      </div>
+    </div>
+
+    <div class="override-panel" hidden>
+      <div class="override-panel__hint">
+        Für den Prototypen gelten die bestehenden Text-Overrides auch für den Einzelspiel-Slide.
+      </div>
+      ${renderOverrideRow(baseMatch, "gameday")}
+    </div>
+
+    ${firstSlide && !hasLocalLogos(firstSlide)
+      ? '<div class="logo-warning">Mindestens ein Vereinslogo fehlt lokal. `npm run logos:audit` im Branch ausführen; bis dahin wird ein Platzhalter angezeigt.</div>'
+      : ''}
+
+    <div class="preview-wrap">
+      <iframe title="Einzelspiel"></iframe>
+    </div>
+  `;
+
+  const downloadButton = article.querySelector(".download");
+  const overrideToggle = article.querySelector(".override-toggle");
+  const overridePanel = article.querySelector(".override-panel");
+  const iframe = article.querySelector("iframe");
+  let refreshTimer = null;
+
+  const refreshPreview = () => {
+    const currentSlide = makeSlide();
+    downloadButton.disabled = true;
+    iframe.srcdoc = renderSingleSlideDocument(currentSlide, BASE_HREF);
+  };
+
+  const scheduleRefresh = () => {
+    clearTimeout(refreshTimer);
+    refreshTimer = setTimeout(refreshPreview, 120);
+  };
+
+  iframe.addEventListener("load", () => {
+    downloadButton.disabled = false;
+  });
+
+  overrideToggle.addEventListener("click", () => {
+    const willOpen = overridePanel.hidden;
+    overridePanel.hidden = !willOpen;
+    overrideToggle.textContent = willOpen ? "Overrides schließen" : "Overrides bearbeiten";
+  });
+
+  overridePanel.addEventListener("input", (event) => {
+    const input = event.target.closest("[data-override-field]");
+    if (!input) return;
+
+    const field = input.dataset.overrideField;
+    const accepted = updateMatchOverride(baseMatch, field, input.value);
+    input.classList.toggle("is-invalid", !accepted);
+    if (accepted) scheduleRefresh();
+  });
+
+  overridePanel.addEventListener("click", (event) => {
+    const resetButton = event.target.closest(".override-reset");
+    if (!resetButton) return;
+
+    matchOverrides.delete(String(rawMatch.id));
+    const row = resetButton.closest(".override-row");
+    const teamInput = row.querySelector('[data-override-field="teamLabel"]');
+    const opponentInput = row.querySelector('[data-override-field="opponent"]');
+    const timeInput = row.querySelector('[data-override-field="time"]');
+
+    if (teamInput) teamInput.value = baseMatch.teamLabel;
+    if (opponentInput) opponentInput.value = baseMatch.opponent;
+    if (timeInput) timeInput.value = baseMatch.time;
+    row.querySelectorAll(".is-invalid").forEach((element) => element.classList.remove("is-invalid"));
+    refreshPreview();
+  });
+
+  refreshPreview();
+
+  downloadButton.addEventListener("click", () => {
+    const currentSlide = makeSlide();
+    downloadPng(downloadButton, iframe, currentSlide.filename);
+  });
+
+  return article;
+}
+
 async function loadData() {
   submitButton.disabled = true;
   setStatus("Spieldaten werden geladen …", "loading");
@@ -750,7 +901,19 @@ async function loadData() {
   }
 
   dataSet = data;
+
+  try {
+    const logoResponse = await fetch("./data/club-logos.json", { cache: "no-store" });
+    if (logoResponse.ok) {
+      const parsed = await logoResponse.json();
+      if (parsed?.clubs && parsed?.teams) logoManifest = parsed;
+    }
+  } catch (error) {
+    console.warn("Logo-Manifest konnte nicht geladen werden:", error);
+  }
+
   submitButton.disabled = false;
+  refreshSingleMatchOptions();
 
   const generatedAt = data.generatedAt
     ? new Intl.DateTimeFormat("de-DE", {
@@ -788,8 +951,24 @@ form.addEventListener("submit", (event) => {
     match.date >= from && match.date <= to
   );
 
-  const generatedSlides = buildSlides(filteredMatches, mode);
   slides.innerHTML = "";
+
+  if (mode === "single") {
+    const selected = filteredMatches.find(
+      (match) => String(match.id) === String(singleMatchInput.value)
+    );
+
+    if (!selected || !ownTeam(selected)) {
+      setStatus("Bitte ein gültiges SG-Spiel auswählen.", "empty");
+      return;
+    }
+
+    slides.appendChild(singleSlideCard(selected));
+    setStatus("Einzelspiel-Slide erzeugt.", "success");
+    return;
+  }
+
+  const generatedSlides = buildSlides(filteredMatches, mode);
 
   if (!generatedSlides.length) {
     setStatus("Für den Zeitraum wurden keine passenden Slides gefunden.", "empty");
@@ -802,6 +981,10 @@ form.addEventListener("submit", (event) => {
 
   setStatus(`${generatedSlides.length} Slide(s) erzeugt.`, "success");
 });
+
+modeInput.addEventListener("change", refreshSingleMatchOptions);
+fromInput.addEventListener("change", refreshSingleMatchOptions);
+toInput.addEventListener("change", refreshSingleMatchOptions);
 
 setDefaultRange();
 

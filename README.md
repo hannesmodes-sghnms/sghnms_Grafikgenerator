@@ -257,3 +257,46 @@ PNG-Download
 ```
 
 Dadurch benötigt die öffentlich erreichbare Anwendung keine eigene API, Datenbank oder dauerhaft laufende Serverinstanz.
+
+## Einzelspiel-Prototyp
+
+Für die Entwicklung des Einzelspiel-Slides sollte ein separater Branch verwendet werden, z. B.:
+
+```text
+feature/einzelspiel-slide
+```
+
+Die Variante **Einzelspiel** ergänzt die bestehende Oberfläche um eine Spielauswahl innerhalb des gewählten Datumsbereichs. Der Prototyp nutzt weiterhin die statischen Saisondaten aus `public/data/matches.json` und erzeugt genau einen Slide für das ausgewählte Spiel.
+
+### Vereinslogos
+
+Vereinslogos werden bewusst **nicht** im regulären 6-Stunden-Workflow abgefragt. Das verhindert unnötige Requests an handball.net / handball360.
+
+Der Logo-Audit wird manuell ausgeführt:
+
+```bash
+npm run update:data
+npm run logos:audit
+```
+
+Das Script:
+
+1. sammelt alle Teams aus dem aktuellen Saisonspielplan,
+2. öffnet die jeweilige öffentliche handball.net Teamseite,
+3. ermittelt das dort verwendete handball360-Logo,
+4. speichert die Originaldatei unter `public/assets/club-logos/raw/`,
+5. erzeugt eine lokale PNG-Version unter `public/assets/club-logos/processed/`,
+6. entfernt nur helle Außenflächen, die vom Bildrand aus zusammenhängend erreichbar sind,
+7. schreibt Auflösung, Format, Transparenz und Qualitätsstatus nach `public/data/club-logos.json`.
+
+Wichtig: Es wird **nicht pauschal alles Weiße transparent** gesetzt. Weiße Flächen im Inneren eines Logos bleiben deshalb normalerweise erhalten.
+
+Problematische Logos können manuell ersetzt werden:
+
+```text
+public/assets/club-logos/overrides/<clubId>.png
+```
+
+Eine Override-Datei hat beim nächsten Audit Vorrang vor der automatisch aufbereiteten Version.
+
+Der Logo-Audit ist absichtlich **nicht** Teil von `.github/workflows/deploy-pages.yml`.
