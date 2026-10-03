@@ -6,6 +6,8 @@
   "scripts": {
     "start": "node scripts/prepare-static.js && node server.js",
     "update:data": "node scripts/update-matches.js",
+    "logos:sync": "node scripts/logo-sync.js",
+    "logos:seed-overrides": "node scripts/seed-logo-overrides.js",
     "logos:audit": "node scripts/logo-audit.js",
     "prepare:static": "node scripts/prepare-static.js",
     "build": "npm run update:data && npm run prepare:static"

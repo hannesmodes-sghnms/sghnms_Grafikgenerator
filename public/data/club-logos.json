@@ -1,6 +1,7 @@
 {
   "generatedAt": null,
-  "note": "Mit `npm run logos:audit` erzeugen. Nicht im regulären 6-Stunden-Workflow ausführen.",
+  "strategy": "override-first-raw-fallback",
+  "note": "Mit `npm run logos:sync` erzeugen. Override-PNG gewinnt immer, sonst wird das unveraenderte Raw-Logo verwendet.",
   "clubs": {},
   "teams": {}
 }
