@@ -14,7 +14,7 @@ const RAW_DIR = path.join(LOGO_ROOT, "raw");
 const PROCESSED_DIR = path.join(LOGO_ROOT, "processed");
 const OVERRIDE_DIR = path.join(LOGO_ROOT, "overrides");
 
-const PROCESSOR_VERSION = 2;
+const PROCESSOR_VERSION = 4;
 const FORCE = process.argv.includes("--force");
 const USER_AGENT =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
@@ -85,13 +85,6 @@ async function downloadBuffer(url) {
   return Buffer.from(await response.arrayBuffer());
 }
 
-function colorDistance(a, b) {
-  const dr = a[0] - b[0];
-  const dg = a[1] - b[1];
-  const db = a[2] - b[2];
-  return Math.sqrt(dr * dr + dg * dg + db * db);
-}
-
 function chroma(r, g, b) {
   return Math.max(r, g, b) - Math.min(r, g, b);
 }
@@ -100,67 +93,67 @@ function brightness(r, g, b) {
   return (r + g + b) / 3;
 }
 
-function estimateBorderBackground(data, width, height, channels) {
-  const samples = [];
-  const stepX = Math.max(1, Math.floor(width / 80));
-  const stepY = Math.max(1, Math.floor(height / 80));
+function isNearWhite(r, g, b) {
+  const min = Math.min(r, g, b);
+  const max = Math.max(r, g, b);
 
-  const add = (x, y) => {
-    const offset = (y * width + x) * channels;
+  // JPG-Artefakte und leicht gebrochene weisse Hintergruende tolerieren,
+  // deutlich graue Flaechen aber NICHT als Hintergrund behandeln.
+  return min >= 214 && max - min <= 38 && brightness(r, g, b) >= 224;
+}
+
+async function buildProtectedForegroundMask(data, width, height, channels) {
+  const pixelCount = width * height;
+  const foreground = Buffer.alloc(pixelCount);
+
+  for (let pixel = 0; pixel < pixelCount; pixel += 1) {
+    const offset = pixel * channels;
     const r = data[offset];
     const g = data[offset + 1];
     const b = data[offset + 2];
     const a = data[offset + 3];
 
-    if (a > 20 && chroma(r, g, b) <= 45) {
-      samples.push([r, g, b]);
+    if (a === 0) {
+      foreground[pixel] = 0;
+      continue;
     }
+
+    foreground[pixel] = isNearWhite(r, g, b) ? 0 : 255;
+  }
+
+  /*
+   * Schutz gegen "Lecks" wie beim Bramstedter TS Logo:
+   *
+   * Die weisse Diagonale gehoert zum Logo, ist oben rechts aber durch eine
+   * relativ schmale Oeffnung mit dem weissen Aussenhintergrund verbunden.
+   * Ein normales Flood-Fill wuerde deshalb die komplette Diagonale loeschen.
+   *
+   * Wir schliessen vor dem Flood-Fill schmale Oeffnungen in der Vordergrund-
+   * Silhouette (morphologisches Closing). Dadurch wird nur die Verbindung zum
+   * Aussenhintergrund versiegelt; die Originalpixel selbst werden NICHT
+   * veraendert. Die graue Flaeche des Bramstedter Logos bleibt unangetastet.
+   */
+  const sealRadius = Math.max(
+    2,
+    Math.min(18, Math.round(Math.min(width, height) * 0.012))
+  );
+
+  const protectedMask = await sharp(foreground, {
+    raw: {
+      width,
+      height,
+      channels: 1
+    }
+  })
+    .dilate(sealRadius)
+    .erode(sealRadius)
+    .raw()
+    .toBuffer();
+
+  return {
+    protectedMask,
+    sealRadius
   };
-
-  for (let x = 0; x < width; x += stepX) {
-    add(x, 0);
-    add(x, height - 1);
-  }
-
-  for (let y = 0; y < height; y += stepY) {
-    add(0, y);
-    add(width - 1, y);
-  }
-
-  if (!samples.length) return null;
-
-  // Quantisieren, damit JPG-Rauschen nicht jeden Hintergrundpixel in einen
-  // eigenen Farbwert zerlegt.
-  const buckets = new Map();
-
-  for (const [r, g, b] of samples) {
-    const key = [r, g, b]
-      .map((value) => Math.round(value / 12) * 12)
-      .join(",");
-    const bucket = buckets.get(key) || { count: 0, r: 0, g: 0, b: 0 };
-    bucket.count += 1;
-    bucket.r += r;
-    bucket.g += g;
-    bucket.b += b;
-    buckets.set(key, bucket);
-  }
-
-  const dominant = [...buckets.values()].sort((a, b) => b.count - a.count)[0];
-  if (!dominant) return null;
-
-  return [
-    dominant.r / dominant.count,
-    dominant.g / dominant.count,
-    dominant.b / dominant.count
-  ];
-}
-
-function isExteriorCandidate(r, g, b, borderColor) {
-  if (!borderColor) {
-    return Math.min(r, g, b) >= 185 && chroma(r, g, b) <= 30;
-  }
-
-  return colorDistance([r, g, b], borderColor) <= 48 && chroma(r, g, b) <= 55;
 }
 
 async function removeExteriorBackground(inputBuffer, outputFile) {
@@ -168,31 +161,42 @@ async function removeExteriorBackground(inputBuffer, outputFile) {
   const { data, info } = await image.raw().toBuffer({ resolveWithObject: true });
   const { width, height, channels } = info;
   const pixelCount = width * height;
+
+  const { protectedMask, sealRadius } = await buildProtectedForegroundMask(
+    data,
+    width,
+    height,
+    channels
+  );
+
   const visited = new Uint8Array(pixelCount);
   const queue = new Int32Array(pixelCount);
   let head = 0;
   let tail = 0;
 
-  const borderColor = estimateBorderBackground(data, width, height, channels);
-  const borderBrightness = borderColor
-    ? brightness(borderColor[0], borderColor[1], borderColor[2])
-    : 255;
+  const isBackgroundCandidate = (pixel) => {
+    const offset = pixel * channels;
+    const a = data[offset + 3];
+
+    if (a === 0) return true;
+    if (protectedMask[pixel] >= 128) return false;
+
+    return isNearWhite(
+      data[offset],
+      data[offset + 1],
+      data[offset + 2]
+    );
+  };
 
   const enqueueIfBackground = (x, y) => {
     if (x < 0 || y < 0 || x >= width || y >= height) return;
+
     const pixel = y * width + x;
     if (visited[pixel]) return;
+    if (!isBackgroundCandidate(pixel)) return;
 
-    const offset = pixel * channels;
-    const r = data[offset];
-    const g = data[offset + 1];
-    const b = data[offset + 2];
-    const a = data[offset + 3];
-
-    if (a === 0 || isExteriorCandidate(r, g, b, borderColor)) {
-      visited[pixel] = 1;
-      queue[tail++] = pixel;
-    }
+    visited[pixel] = 1;
+    queue[tail++] = pixel;
   };
 
   for (let x = 0; x < width; x += 1) {
@@ -218,43 +222,12 @@ async function removeExteriorBackground(inputBuffer, outputFile) {
       removedPixels += 1;
     }
 
+    // Bewusst 4er-Nachbarschaft: diagonale Mini-Verbindungen sollen nicht
+    // ausreichen, um in eine weisse Innenflaeche des Logos zu "lecken".
     enqueueIfBackground(x - 1, y);
     enqueueIfBackground(x + 1, y);
     enqueueIfBackground(x, y - 1);
     enqueueIfBackground(x, y + 1);
-  }
-
-  /*
-   * Sonderfall wie Bramstedter TS:
-   * farbige Diagonalstreifen beruehren den Bildrand und teilen den grauen
-   * Hintergrund in voneinander getrennte Flaechen. Flood-Fill alleine kann
-   * diese eingeschlossenen grauen Flaechen nicht erreichen.
-   *
-   * Wenn der dominante Rand-Hintergrund deutlich grau (nicht nahezu weiss)
-   * ist, entfernen wir deshalb zusaetzlich alle Pixel, die farblich sehr nah
-   * am erkannten Rand-Hintergrund liegen. Weisse Logo-Bestandteile bleiben
-   * dabei erhalten, weil sie deutlich heller als der graue Hintergrund sind.
-   * Bei fast weissem Hintergrund wird dieser globale Schritt bewusst NICHT
-   * ausgefuehrt, damit weisse Innenflaechen eines Logos nicht verschwinden.
-   */
-  let globallyRemovedPixels = 0;
-
-  if (borderColor && borderBrightness < 238) {
-    for (let pixel = 0; pixel < pixelCount; pixel += 1) {
-      const offset = pixel * channels;
-      const a = data[offset + 3];
-      if (a === 0) continue;
-
-      const r = data[offset];
-      const g = data[offset + 1];
-      const b = data[offset + 2];
-      const distance = colorDistance([r, g, b], borderColor);
-
-      if (distance <= 34 && chroma(r, g, b) <= 50) {
-        data[offset + 3] = 0;
-        globallyRemovedPixels += 1;
-      }
-    }
   }
 
   await sharp(data, {
@@ -265,19 +238,16 @@ async function removeExteriorBackground(inputBuffer, outputFile) {
     }
   }).png().toFile(outputFile);
 
-  const totalRemovedPixels = removedPixels + globallyRemovedPixels;
-
   return {
     width,
     height,
-    borderColor: borderColor
-      ? borderColor.map((value) => Math.round(value))
-      : null,
-    borderBrightness: Number(borderBrightness.toFixed(1)),
-    removedPixels: totalRemovedPixels,
+    removedPixels,
     connectedRemovedPixels: removedPixels,
-    globallyRemovedPixels,
-    removedRatio: pixelCount ? totalRemovedPixels / pixelCount : 0
+    globallyRemovedPixels: 0,
+    componentRemovedPixels: 0,
+    removedRatio: pixelCount ? removedPixels / pixelCount : 0,
+    backgroundStrategy: "near-white-edge-with-gap-seal",
+    sealRadius
   };
 }
 
@@ -416,10 +386,11 @@ async function main() {
         format: metadata.format ?? null,
         hasAlpha: Boolean(metadata.hasAlpha),
         backgroundRemoved: processed.removedPixels > 0,
-        backgroundColor: processed.borderColor,
-        backgroundBrightness: processed.borderBrightness,
+        backgroundStrategy: processed.backgroundStrategy,
+        sealRadius: processed.sealRadius,
         connectedRemovedPixels: processed.connectedRemovedPixels,
-        globallyRemovedPixels: processed.globallyRemovedPixels,
+        globallyRemovedPixels: 0,
+        componentRemovedPixels: 0,
         removedRatio: Number(processed.removedRatio.toFixed(4)),
         quality: small ? "check-resolution" : "ok",
         status: "processed"
