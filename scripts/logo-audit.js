@@ -14,6 +14,7 @@ const RAW_DIR = path.join(LOGO_ROOT, "raw");
 const PROCESSED_DIR = path.join(LOGO_ROOT, "processed");
 const OVERRIDE_DIR = path.join(LOGO_ROOT, "overrides");
 
+const PROCESSOR_VERSION = 2;
 const FORCE = process.argv.includes("--force");
 const USER_AGENT =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
@@ -84,15 +85,82 @@ async function downloadBuffer(url) {
   return Buffer.from(await response.arrayBuffer());
 }
 
-function isExteriorCandidate(r, g, b) {
-  const min = Math.min(r, g, b);
-  const max = Math.max(r, g, b);
-  const chroma = max - min;
+function colorDistance(a, b) {
+  const dr = a[0] - b[0];
+  const dg = a[1] - b[1];
+  const db = a[2] - b[2];
+  return Math.sqrt(dr * dr + dg * dg + db * db);
+}
 
-  // Absichtlich relativ tolerant: viele Vereinslogos liegen auf weißem oder
-  // hellgrauem JPG-Hintergrund. Entfernt werden trotzdem nur Pixel, die vom
-  // Bildrand aus zusammenhängend erreichbar sind.
-  return min >= 185 && chroma <= 30;
+function chroma(r, g, b) {
+  return Math.max(r, g, b) - Math.min(r, g, b);
+}
+
+function brightness(r, g, b) {
+  return (r + g + b) / 3;
+}
+
+function estimateBorderBackground(data, width, height, channels) {
+  const samples = [];
+  const stepX = Math.max(1, Math.floor(width / 80));
+  const stepY = Math.max(1, Math.floor(height / 80));
+
+  const add = (x, y) => {
+    const offset = (y * width + x) * channels;
+    const r = data[offset];
+    const g = data[offset + 1];
+    const b = data[offset + 2];
+    const a = data[offset + 3];
+
+    if (a > 20 && chroma(r, g, b) <= 45) {
+      samples.push([r, g, b]);
+    }
+  };
+
+  for (let x = 0; x < width; x += stepX) {
+    add(x, 0);
+    add(x, height - 1);
+  }
+
+  for (let y = 0; y < height; y += stepY) {
+    add(0, y);
+    add(width - 1, y);
+  }
+
+  if (!samples.length) return null;
+
+  // Quantisieren, damit JPG-Rauschen nicht jeden Hintergrundpixel in einen
+  // eigenen Farbwert zerlegt.
+  const buckets = new Map();
+
+  for (const [r, g, b] of samples) {
+    const key = [r, g, b]
+      .map((value) => Math.round(value / 12) * 12)
+      .join(",");
+    const bucket = buckets.get(key) || { count: 0, r: 0, g: 0, b: 0 };
+    bucket.count += 1;
+    bucket.r += r;
+    bucket.g += g;
+    bucket.b += b;
+    buckets.set(key, bucket);
+  }
+
+  const dominant = [...buckets.values()].sort((a, b) => b.count - a.count)[0];
+  if (!dominant) return null;
+
+  return [
+    dominant.r / dominant.count,
+    dominant.g / dominant.count,
+    dominant.b / dominant.count
+  ];
+}
+
+function isExteriorCandidate(r, g, b, borderColor) {
+  if (!borderColor) {
+    return Math.min(r, g, b) >= 185 && chroma(r, g, b) <= 30;
+  }
+
+  return colorDistance([r, g, b], borderColor) <= 48 && chroma(r, g, b) <= 55;
 }
 
 async function removeExteriorBackground(inputBuffer, outputFile) {
@@ -105,6 +173,11 @@ async function removeExteriorBackground(inputBuffer, outputFile) {
   let head = 0;
   let tail = 0;
 
+  const borderColor = estimateBorderBackground(data, width, height, channels);
+  const borderBrightness = borderColor
+    ? brightness(borderColor[0], borderColor[1], borderColor[2])
+    : 255;
+
   const enqueueIfBackground = (x, y) => {
     if (x < 0 || y < 0 || x >= width || y >= height) return;
     const pixel = y * width + x;
@@ -116,7 +189,7 @@ async function removeExteriorBackground(inputBuffer, outputFile) {
     const b = data[offset + 2];
     const a = data[offset + 3];
 
-    if (a === 0 || isExteriorCandidate(r, g, b)) {
+    if (a === 0 || isExteriorCandidate(r, g, b, borderColor)) {
       visited[pixel] = 1;
       queue[tail++] = pixel;
     }
@@ -151,6 +224,39 @@ async function removeExteriorBackground(inputBuffer, outputFile) {
     enqueueIfBackground(x, y + 1);
   }
 
+  /*
+   * Sonderfall wie Bramstedter TS:
+   * farbige Diagonalstreifen beruehren den Bildrand und teilen den grauen
+   * Hintergrund in voneinander getrennte Flaechen. Flood-Fill alleine kann
+   * diese eingeschlossenen grauen Flaechen nicht erreichen.
+   *
+   * Wenn der dominante Rand-Hintergrund deutlich grau (nicht nahezu weiss)
+   * ist, entfernen wir deshalb zusaetzlich alle Pixel, die farblich sehr nah
+   * am erkannten Rand-Hintergrund liegen. Weisse Logo-Bestandteile bleiben
+   * dabei erhalten, weil sie deutlich heller als der graue Hintergrund sind.
+   * Bei fast weissem Hintergrund wird dieser globale Schritt bewusst NICHT
+   * ausgefuehrt, damit weisse Innenflaechen eines Logos nicht verschwinden.
+   */
+  let globallyRemovedPixels = 0;
+
+  if (borderColor && borderBrightness < 238) {
+    for (let pixel = 0; pixel < pixelCount; pixel += 1) {
+      const offset = pixel * channels;
+      const a = data[offset + 3];
+      if (a === 0) continue;
+
+      const r = data[offset];
+      const g = data[offset + 1];
+      const b = data[offset + 2];
+      const distance = colorDistance([r, g, b], borderColor);
+
+      if (distance <= 34 && chroma(r, g, b) <= 50) {
+        data[offset + 3] = 0;
+        globallyRemovedPixels += 1;
+      }
+    }
+  }
+
   await sharp(data, {
     raw: {
       width,
@@ -159,11 +265,19 @@ async function removeExteriorBackground(inputBuffer, outputFile) {
     }
   }).png().toFile(outputFile);
 
+  const totalRemovedPixels = removedPixels + globallyRemovedPixels;
+
   return {
     width,
     height,
-    removedPixels,
-    removedRatio: pixelCount ? removedPixels / pixelCount : 0
+    borderColor: borderColor
+      ? borderColor.map((value) => Math.round(value))
+      : null,
+    borderBrightness: Number(borderBrightness.toFixed(1)),
+    removedPixels: totalRemovedPixels,
+    connectedRemovedPixels: removedPixels,
+    globallyRemovedPixels,
+    removedRatio: pixelCount ? totalRemovedPixels / pixelCount : 0
   };
 }
 
@@ -180,7 +294,7 @@ async function main() {
 
   if (!matchesPayload?.matches?.length) {
     throw new Error(
-      "Keine Spieldaten gefunden. Erst `npm run update:data` ausführen."
+      "Keine Spieldaten gefunden. Erst `npm run update:data` ausfuehren."
     );
   }
 
@@ -230,6 +344,7 @@ async function main() {
         names: [...new Set([...(clubs[key]?.names || []), team.name])],
         asset: overrideRelative,
         override: true,
+        processorVersion: PROCESSOR_VERSION,
         width: metadata.width ?? null,
         height: metadata.height ?? null,
         format: metadata.format ?? "png",
@@ -244,7 +359,12 @@ async function main() {
     const processedRelative = `assets/club-logos/processed/${key}.png`;
     const processedAbsolute = path.join(ROOT, "public", processedRelative);
 
-    if (!FORCE && clubs[key]?.asset && await fileExists(processedAbsolute)) {
+    const cacheIsCurrent =
+      clubs[key]?.processorVersion === PROCESSOR_VERSION &&
+      clubs[key]?.asset &&
+      await fileExists(processedAbsolute);
+
+    if (!FORCE && cacheIsCurrent) {
       report.push({
         team: team.name,
         status: "cached",
@@ -264,6 +384,7 @@ async function main() {
           names: [...new Set([...(clubs[key]?.names || []), team.name])],
           asset: null,
           sourceUrl: null,
+          processorVersion: PROCESSOR_VERSION,
           status: "missing"
         };
         report.push({ team: team.name, status: "missing", size: "-" });
@@ -289,11 +410,16 @@ async function main() {
         rawFile: rawRelative,
         asset: processedRelative,
         override: false,
+        processorVersion: PROCESSOR_VERSION,
         width: metadata.width ?? processed.width,
         height: metadata.height ?? processed.height,
         format: metadata.format ?? null,
         hasAlpha: Boolean(metadata.hasAlpha),
         backgroundRemoved: processed.removedPixels > 0,
+        backgroundColor: processed.borderColor,
+        backgroundBrightness: processed.borderBrightness,
+        connectedRemovedPixels: processed.connectedRemovedPixels,
+        globallyRemovedPixels: processed.globallyRemovedPixels,
         removedRatio: Number(processed.removedRatio.toFixed(4)),
         quality: small ? "check-resolution" : "ok",
         status: "processed"
@@ -311,6 +437,7 @@ async function main() {
         clubId: team.clubId,
         names: [...new Set([...(clubs[key]?.names || []), team.name])],
         asset: clubs[key]?.asset || null,
+        processorVersion: PROCESSOR_VERSION,
         status: "error",
         error: error.message
       };
@@ -320,7 +447,8 @@ async function main() {
 
   const manifest = {
     generatedAt: new Date().toISOString(),
-    note: "Logo-Audit wird bewusst manuell ausgeführt und ist nicht Teil des regelmäßigen Pages-Workflows.",
+    processorVersion: PROCESSOR_VERSION,
+    note: "Logo-Audit wird bewusst manuell ausgefuehrt und ist nicht Teil des regelmaessigen Pages-Workflows.",
     clubs,
     teams: teamMap
   };
