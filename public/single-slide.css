@@ -43,7 +43,16 @@ body {
   width: var(--canvas-width);
   height: var(--canvas-height);
   overflow: hidden;
-  background: url("assets/canva/slide-bg.png") center/100% 100% no-repeat;
+  /*
+   * Canva uses the background image slightly zoomed/cropped instead of
+   * showing the complete source image. A centered 124% crop reproduces that
+   * framing: the upper and lower brush bands move farther towards the canvas
+   * edges and the headline sits on the dark-blue area instead of the brushes.
+   */
+  background-image: url("assets/canva/slide-bg.png");
+  background-position: center center;
+  background-size: 124% auto;
+  background-repeat: no-repeat;
   color: white;
   font-family: "Bebas Neue", Arial, sans-serif;
   font-synthesis: none;
