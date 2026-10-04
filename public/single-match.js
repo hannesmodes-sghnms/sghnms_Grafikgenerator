@@ -207,6 +207,9 @@ export function buildSingleSlide(match, { overrides = {}, logoManifest = {} } = 
   const competition = shortCompetition(match.competition).toUpperCase();
   const phase = String(match.phase?.name || "").trim().toUpperCase();
   const metaParts = [competition, compactTeamLabel(teamLabel), phase].filter(Boolean);
+  const sgDisplayName = "SG HANDBALL NEUMÜNSTER";
+  const homeDisplayName = perspective.isHome ? sgDisplayName : opponentName;
+  const awayDisplayName = perspective.isHome ? opponentName : sgDisplayName;
 
   return {
     id: match.id,
@@ -216,8 +219,9 @@ export function buildSingleSlide(match, { overrides = {}, logoManifest = {} } = 
     venue,
     time,
     teamLabel,
-    ownDisplayName: `SG HANDBALL NEUMÜNSTER ${compactTeamLabel(teamLabel)}`,
     opponentName,
+    homeDisplayName,
+    awayDisplayName,
     homeTeam: match.home,
     awayTeam: match.away,
     logoManifest,
@@ -258,13 +262,13 @@ export function renderSingleSlideDocument(slide, baseHref) {
         <div class="single-card__time-label">UHR</div>
       </div>
 
-      <div class="single-card__own">${escapeHtml(slide.ownDisplayName)}</div>
+      <div class="single-card__home">${escapeHtml(slide.homeDisplayName)}</div>
 
       <div class="single-card__vs" aria-hidden="true">
         <img src="assets/canva/vs-divider.png" alt="">
       </div>
 
-      <div class="single-card__opponent">${escapeHtml(slide.opponentName)}</div>
+      <div class="single-card__away">${escapeHtml(slide.awayDisplayName)}</div>
     </div>
   </div>
 

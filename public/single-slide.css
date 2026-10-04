@@ -82,8 +82,9 @@ body {
   justify-content: center;
   gap: 14px;
   padding: 8px 34px 7px;
-  border-top: 3px solid rgba(255,255,255,.82);
-  border-bottom: 3px solid rgba(255,255,255,.82);
+  border: 3px solid rgba(255,255,255,.82);
+  border-radius: 22px;
+  overflow: hidden;
   background: rgba(0, 31, 68, .95);
   text-align: center;
 }
@@ -186,8 +187,8 @@ body {
   line-height: .8;
 }
 
-.single-card__own,
-.single-card__opponent {
+.single-card__home,
+.single-card__away {
   display: flex;
   align-items: center;
   justify-content: center;
