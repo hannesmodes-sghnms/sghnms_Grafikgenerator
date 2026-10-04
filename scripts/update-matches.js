@@ -119,8 +119,44 @@ async function fetchClubPage({ from, to, page, retry = true }) {
   );
 }
 
-function berlinParts(isoDate) {
-  const date = new Date(isoDate);
+/*
+ * handball.net liefert die Spielzeit im API-Feld `date` als lokale
+ * Spielzeit, obwohl der String wie ein UTC-Zeitstempel aussehen kann.
+ * Ein `new Date(...)+Europe/Berlin` verschiebt die Uhrzeit deshalb im Sommer
+ * um +2 Stunden (z. B. 10:00 -> 12:00).
+ *
+ * Fuer Datum und Uhrzeit lesen wir deshalb die Wall-Clock-Komponenten direkt
+ * aus dem API-String. Nur der Wochentag wird aus diesen Komponenten berechnet.
+ */
+function handballDateParts(value) {
+  const raw = String(value || "").trim();
+  const match = raw.match(
+    /^(\d{4})-(\d{2})-(\d{2})[T\s](\d{2}):(\d{2})/
+  );
+
+  if (match) {
+    const [, year, month, day, hour, minute] = match;
+    const weekdayDate = new Date(
+      Date.UTC(Number(year), Number(month) - 1, Number(day), 12, 0, 0)
+    );
+
+    return {
+      dateText: `${day}.${month}.${year}`,
+      weekday: new Intl.DateTimeFormat("de-DE", {
+        weekday: "long",
+        timeZone: "UTC"
+      }).format(weekdayDate),
+      time: `${hour}:${minute}`,
+      isoLocal: `${year}-${month}-${day}`
+    };
+  }
+
+  // Fallback fuer den Fall, dass handball.net das Datumsformat aendert.
+  const date = new Date(raw);
+
+  if (Number.isNaN(date.getTime())) {
+    throw new Error(`Unbekanntes Datumsformat von handball.net: ${raw}`);
+  }
 
   return {
     dateText: new Intl.DateTimeFormat("de-DE", {
@@ -152,7 +188,7 @@ function berlinParts(isoDate) {
 }
 
 function normalizeMatch(raw) {
-  const formatted = berlinParts(raw.date);
+  const formatted = handballDateParts(raw.date);
 
   return {
     id: raw.id,
@@ -191,6 +227,10 @@ function normalizeMatch(raw) {
   };
 }
 
+function sortKey(match) {
+  return `${match.date}T${match.time}`;
+}
+
 async function fetchSeasonMatches(dateFrom, dateTo) {
   const all = [];
   let page = 1;
@@ -211,7 +251,7 @@ async function fetchSeasonMatches(dateFrom, dateTo) {
     page += 1;
   } while (page <= lastPage);
 
-  all.sort((a, b) => new Date(a.datetime) - new Date(b.datetime));
+  all.sort((a, b) => sortKey(a).localeCompare(sortKey(b)));
   return all;
 }
 

@@ -11,7 +11,7 @@
     <header class="hero">
       <div class="eyebrow">SG HANDBALL NEUMÜNSTER</div>
       <h1>Social Generator</h1>
-      <p>Spieltags- und Ergebnisgrafiken direkt aus den automatisch aktualisierten handball.net Daten erzeugen.</p>
+      <p>Spieltags-, Ergebnis- und Einzelspielgrafiken direkt aus den automatisch aktualisierten handball.net Daten erzeugen.</p>
     </header>
 
     <section class="controls-card">
@@ -31,7 +31,14 @@
           <select id="mode">
             <option value="gameday">Spieltag</option>
             <option value="results">Ergebnisse</option>
+            <option value="single">Einzelspiel</option>
+            <option value="single-result">Einzelergebnis</option>
           </select>
+        </label>
+
+        <label id="single-match-field" class="single-match-field" hidden>
+          <span>Spiel auswählen</span>
+          <select id="single-match"></select>
         </label>
 
         <button type="submit" disabled>Slides generieren</button>

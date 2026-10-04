@@ -1,54 +1,4 @@
-@font-face {
-  font-family: "Bebas Neue";
-  src: url("assets/fonts/BebasNeue-Bold.ttf") format("truetype");
-  font-style: normal;
-  font-weight: 700;
-  font-display: block;
-}
-
-@font-face {
-  font-family: "Edo";
-  src: url("assets/fonts/edo.ttf") format("truetype");
-  font-style: normal;
-  font-weight: 400;
-  font-display: block;
-}
-
-:root {
-  --canvas-width: 1122px;
-  --canvas-height: 1402px;
-  --brand-blue: #001f44;
-  --copy-blue: #0d2f69;
-  --copy-grey: #565656;
-  --score-red: #bf0b0f;
-}
-
-* { box-sizing: border-box; }
-
-html,
-body {
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
-  background: transparent;
-}
-
-body {
-  width: var(--canvas-width);
-  min-height: 1px;
-}
-
-.single-slide {
-  position: relative;
-  width: var(--canvas-width);
-  height: var(--canvas-height);
-  overflow: hidden;
-  background: url("assets/canva/slide-bg.png") center/100% 100% no-repeat;
-  color: white;
-  font-family: "Bebas Neue", Arial, sans-serif;
-  font-synthesis: none;
-  transform-origin: top left;
-}
+@import url("slide-base.css");
 
 .single-headline {
   position: absolute;
@@ -68,6 +18,8 @@ body {
   width: auto;
   height: auto;
   object-fit: contain;
+  transform: scale(1.55);
+  transform-origin: center;
 }
 
 .single-meta {
@@ -90,6 +42,7 @@ body {
 }
 
 .single-meta__line {
+  width: 100%;
   font-size: 43px;
   line-height: 1;
   letter-spacing: 0.01em;
@@ -98,6 +51,7 @@ body {
 }
 
 .single-meta__venue {
+  width: 100%;
   font-size: 39px;
   line-height: 1;
   letter-spacing: 0.01em;
@@ -123,14 +77,14 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
 }
 
 .single-logo {
   display: block;
-  max-width: 300px;
-  max-height: 300px;
+  height: 300px;
   width: auto;
-  height: auto;
+  max-width: 100%;
   object-fit: contain;
 }
 
@@ -166,7 +120,7 @@ body {
 }
 
 .single-card--result {
-  grid-template-columns: 1fr 245px 1fr;
+  grid-template-columns: 1fr 290px 1fr;
 }
 
 .single-card__time {
@@ -196,30 +150,53 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  min-width: 0;
   height: 100%;
   padding: 14px 18px;
   text-align: center;
   text-transform: uppercase;
+}
+
+.single-card__name-text {
+  width: 100%;
+  max-width: 100%;
   font-size: 44px;
   line-height: .92;
+  overflow-wrap: break-word;
+  word-break: normal;
+  hyphens: none;
 }
 
 .single-card__score {
+  width: 290px;
   height: 100%;
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: center;
+  justify-self: center;
+  justify-items: stretch;
+  column-gap: 5px;
   color: var(--score-red);
   font-size: 137px;
   line-height: .82;
   font-weight: 700;
   letter-spacing: -.035em;
   white-space: nowrap;
+  transform: translateY(10px);
+}
+
+.single-card__score-number:first-child {
+  text-align: right;
+}
+
+.single-card__score-number:last-child {
+  text-align: left;
 }
 
 .single-card__score-separator {
-  display: inline-block;
-  margin: 0 4px;
+  display: block;
+  text-align: center;
+  margin: 0;
 }
 
 .single-card__vs {

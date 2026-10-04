@@ -1,62 +1,10 @@
-@font-face {
-  font-family: "Bebas Neue";
-  src: url("assets/fonts/BebasNeue-Bold.ttf") format("truetype");
-  font-style: normal;
-  font-weight: 700;
-  font-display: block;
-}
-
-:root {
-  --canvas-width: 1122px;
-  --canvas-height: 1402px;
-  --brand-blue: #001f44;
-  --score-red: #bf0b0f;
-  --copy-blue: #0d2f69;
-  --copy-grey: #545454;
-
-}
-
-* {
-  box-sizing: border-box;
-}
-
-html,
-body {
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
-  background: transparent;
-}
-
-body {
-  width: var(--canvas-width);
-  min-height: 1px;
-}
+@import url("slide-base.css");
 
 .slide {
   --card-scale: 0.965;
   --card-gap: 4px;
-  position: relative;
-  width: var(--canvas-width);
-  height: var(--canvas-height);
-  overflow: hidden;
-  color: #fff;
-  font-family: "Bebas Neue", sans-serif;
-  font-weight: 700;
-  font-synthesis: none;
-  background-color: #071f53;
-  background-image:
-    url("assets/sghnms_images/sghnms_bg.png"),
-    url("assets/canva/slide-bg.png");
-  background-position: center, center;
-  background-repeat: no-repeat, no-repeat;
-  background-size: cover, cover;
-  transform-origin: top left;
 }
 
-
-/* Die dynamische Typografie nutzt echtes Bebas Neue Bold.
- * Die drei festen Brush-Headlines kommen als Canva-SVG-Assets. */
 .slide * {
   font-family: "Bebas Neue", sans-serif;
   font-weight: 700;
@@ -111,25 +59,11 @@ body {
   --opponent-base-size: 45.7px;
 }
 
-.match-count-5 {
-  --opponent-base-size: 44px;
-}
-
-.match-count-6 {
-  --opponent-base-size: 42.5px;
-}
-
-.match-count-7 {
-  --opponent-base-size: 41px;
-}
-
-.match-count-8 {
-  --opponent-base-size: 39.5px;
-}
-
-.match-count-9 {
-  --opponent-base-size: 38px;
-}
+.match-count-5 { --opponent-base-size: 44px; }
+.match-count-6 { --opponent-base-size: 42.5px; }
+.match-count-7 { --opponent-base-size: 41px; }
+.match-count-8 { --opponent-base-size: 39.5px; }
+.match-count-9 { --opponent-base-size: 38px; }
 
 .slide-inner {
   position: relative;
@@ -138,11 +72,6 @@ body {
   height: 100%;
 }
 
-/*
- * Headline: Original-Canva-SVGs.
- * Die SVG-Dateien enthalten bereits Rotation, Glyphenform und Drop-Effekt.
- * Wir rendern sie in ihrer nativen Geometrie und zentrieren nur den SVG-Canvas.
- */
 .title-wrap {
   position: absolute;
   top: 12px;
@@ -166,28 +95,15 @@ body {
   user-select: none;
 }
 
-/* v14: Die Canva-SVGs haben unterschiedlich viel transparenten Rand.
- * Die sichtbare Unterkante der drei Headlines wird deshalb angeglichen,
- * ohne Meta-Bar oder restliches Layout zu verschieben. */
-.slide-title-image[src$="headline-away.svg"] {
-  transform: translateY(20px);
-}
-
-.slide-title-image[src$="headline-home.svg"] {
-  transform: translateY(4px);
-}
-
-.slide-title-image[src$="headline-results.svg"] {
-  transform: translateY(-2px);
-}
+.slide-title-image[src$="headline-away.svg"] { transform: translateY(20px); }
+.slide-title-image[src$="headline-home.svg"] { transform: translateY(4px); }
+.slide-title-image[src$="headline-results.svg"] { transform: translateY(-2px); }
 
 .slide-title-fallback {
   margin-top: 96px;
   color: #fff;
-  font-family: "Bebas Neue", sans-serif;
   font-size: 110px;
   line-height: 1;
-  font-weight: 700;
   text-transform: uppercase;
   text-align: center;
 }
@@ -210,7 +126,6 @@ body {
   color: #fff;
   font-size: 42px;
   line-height: 1;
-  font-weight: 700;
   letter-spacing: 0.008em;
   white-space: nowrap;
   text-transform: uppercase;
@@ -223,16 +138,6 @@ body {
   background: url("assets/canva/meta-dot.png") center/contain no-repeat;
 }
 
-/*
- * MATCH-CARD ARCHITEKTUR
- *
- * Die weiße Card ist 1036 x 211.
- * Trapez und VS sind jeweils 176 px hoch. Deshalb gibt es eine eigene
- * 176-px Content-Rail, die exakt in der 211-px Card zentriert wird.
- *
- * Wichtig: Das Card-Scaling bleibt auf dem kompletten Komponentenblock.
- * Die Typo-Größen unten sind deshalb die unskalierten Canva-Basiswerte.
- */
 .matches {
   position: absolute;
   top: 439px;
@@ -283,7 +188,6 @@ body {
   height: 176px;
 }
 
-/* Team */
 .team-box {
   position: absolute;
   left: 14px;
@@ -303,9 +207,6 @@ body {
   user-select: none;
 }
 
-/* Team label: short labels (e.g. WJE 2) use the full Canva size.
- * Longer labels (e.g. FRAUEN 2 / HERREN 1) get extra inner margins and a
- * smaller starting size, then JS may shrink further if needed. */
 .team-label {
   position: absolute;
   left: 0;
@@ -320,7 +221,6 @@ body {
   color: #fff;
   font-size: 77.48px;
   line-height: 0.9;
-  font-weight: 700;
   text-align: center;
   text-transform: uppercase;
 }
@@ -330,7 +230,6 @@ body {
   font-size: 63px;
 }
 
-/* Uhrzeit / Ergebnis */
 .center-box {
   position: absolute;
   left: 318px;
@@ -349,11 +248,17 @@ body {
   transform: translateY(10px);
 }
 
+/* Die Ziffern wirken durch die Font-Metrik optisch etwas zu hoch.
+ * Ergebnis-Cards bekommen deshalb dieselbe optische Korrektur nach unten,
+ * ohne die horizontale Zentrierung oder Spaltenbreite zu verändern. */
+.match-card--results .center-box {
+  transform: translateY(10px);
+}
+
 .time {
   color: var(--copy-grey);
   font-size: 158px;
   line-height: 0.76;
-  font-weight: 700;
   letter-spacing: -0.035em;
   white-space: nowrap;
 }
@@ -363,14 +268,12 @@ body {
   color: var(--copy-grey);
   font-size: 75px;
   line-height: 0.8;
-  font-weight: 700;
 }
 
 .score {
   color: var(--score-red);
   font-size: 137px;
   line-height: 0.82;
-  font-weight: 700;
   letter-spacing: -0.035em;
   white-space: nowrap;
 }
@@ -380,12 +283,6 @@ body {
   margin: 0 4px;
 }
 
-/* VS: Das gelieferte CanvaVS.png enthält Kreis, Linien UND Text.
- * Der Kreis selbst liegt im PNG bei x=32..87, also Mittelpunkt x=59.5.
- * Der PNG-Mittelpunkt wäre x=54.5. Deshalb wird das Asset 5 px nach links
- * versetzt, damit DER KREIS (nicht das Canvas) auf dem Sollmittelpunkt sitzt.
- * Vertikal liegt der Kreismittelpunkt bei y=86 statt Canvas-Mitte 88,
- * daher +2 px nach unten. */
 .vs-box {
   position: absolute;
   left: 601px;
@@ -405,7 +302,6 @@ body {
   user-select: none;
 }
 
-/* Gegner */
 .opponent-box {
   position: absolute;
   left: 722px;
@@ -432,9 +328,3 @@ body {
   white-space: normal;
   hyphens: none;
 }
-
-.opponent-box--md { font-size: inherit; }
-.opponent-box--lg { font-size: inherit; }
-.opponent-box--xl { font-size: inherit; }
-.opponent-box--xxl { font-size: inherit; }
-
