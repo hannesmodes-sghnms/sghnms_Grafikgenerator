@@ -31,7 +31,7 @@ jobs:
           node-version: 20
 
       - name: Install runtime dependencies
-        run: npm install --omit=dev --no-audit --no-fund
+        run: npm ci --omit=dev --no-audit --no-fund
 
       - name: Fetch current season data
         run: npm run update:data
