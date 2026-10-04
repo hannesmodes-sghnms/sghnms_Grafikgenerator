@@ -1,60 +1,4 @@
-@font-face {
-  font-family: "Bebas Neue";
-  src: url("assets/fonts/BebasNeue-Bold.ttf") format("truetype");
-  font-style: normal;
-  font-weight: 700;
-  font-display: block;
-}
-
-@font-face {
-  font-family: "Edo";
-  src: url("assets/fonts/edo.ttf") format("truetype");
-  font-style: normal;
-  font-weight: 400;
-  font-display: block;
-}
-
-:root {
-  --canvas-width: 1122px;
-  --canvas-height: 1402px;
-  --brand-blue: #001f44;
-  --copy-blue: #0d2f69;
-  --copy-grey: #565656;
-  --score-red: #bf0b0f;
-}
-
-* { box-sizing: border-box; }
-
-html,
-body {
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
-  background: transparent;
-}
-
-body {
-  width: var(--canvas-width);
-  min-height: 1px;
-}
-
-.single-slide {
-  position: relative;
-  width: var(--canvas-width);
-  height: var(--canvas-height);
-  overflow: hidden;
-  background-color: #071f53;
-  background-image:
-    url("assets/sghnms_images/sghnms_bg.png"),
-    url("assets/canva/slide-bg.png");
-  background-position: center, center;
-  background-repeat: no-repeat, no-repeat;
-  background-size: cover, cover;
-  color: white;
-  font-family: "Bebas Neue", Arial, sans-serif;
-  font-synthesis: none;
-  transform-origin: top left;
-}
+@import url("slide-base.css");
 
 .single-headline {
   position: absolute;
@@ -98,6 +42,7 @@ body {
 }
 
 .single-meta__line {
+  width: 100%;
   font-size: 43px;
   line-height: 1;
   letter-spacing: 0.01em;
@@ -106,6 +51,7 @@ body {
 }
 
 .single-meta__venue {
+  width: 100%;
   font-size: 39px;
   line-height: 1;
   letter-spacing: 0.01em;
@@ -131,6 +77,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
 }
 
 .single-logo {
@@ -203,12 +150,21 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  min-width: 0;
   height: 100%;
   padding: 14px 18px;
   text-align: center;
   text-transform: uppercase;
+}
+
+.single-card__name-text {
+  width: 100%;
+  max-width: 100%;
   font-size: 44px;
   line-height: .92;
+  overflow-wrap: break-word;
+  word-break: normal;
+  hyphens: none;
 }
 
 .single-card__score {

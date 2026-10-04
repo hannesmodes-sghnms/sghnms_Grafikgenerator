@@ -1,54 +1,10 @@
-import { TEAM_LABELS, VENUE_LABELS } from "./config.js";
-
-function escapeHtml(value = "") {
-  return String(value)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
-
-function slugify(value = "") {
-  return String(value)
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
-
-function venueLabel(name) {
-  const key = String(name || "").trim().toUpperCase();
-  return VENUE_LABELS[key] || String(name || "").trim();
-}
-
-function ownPerspective(match) {
-  const homeId = String(match.home?.id ?? "");
-  const awayId = String(match.away?.id ?? "");
-
-  if (TEAM_LABELS[homeId]) {
-    return {
-      isHome: true,
-      teamId: homeId,
-      teamLabel: TEAM_LABELS[homeId],
-      ownTeam: match.home,
-      opponent: match.away
-    };
-  }
-
-  if (TEAM_LABELS[awayId]) {
-    return {
-      isHome: false,
-      teamId: awayId,
-      teamLabel: TEAM_LABELS[awayId],
-      ownTeam: match.away,
-      opponent: match.home
-    };
-  }
-
-  return null;
-}
+import {
+  escapeHtml,
+  ownTeamPerspective,
+  renderBreakableName,
+  slugify,
+  venueLabel
+} from "./match-utils.js";
 
 function shortCompetition(value = "") {
   const name = String(value).trim();
@@ -124,6 +80,65 @@ function fitScript() {
         document.body.style.height = (BASE_HEIGHT * scale) + "px";
       }
 
+      function renderedLineCount(element) {
+        const range = document.createRange();
+        range.selectNodeContents(element);
+        const rects = [...range.getClientRects()]
+          .filter((rect) => rect.width > 0.5 && rect.height > 0.5)
+          .sort((a, b) => a.top - b.top || a.left - b.left);
+        const tops = [];
+
+        for (const rect of rects) {
+          if (!tops.some((top) => Math.abs(top - rect.top) < 2)) {
+            tops.push(rect.top);
+          }
+        }
+
+        return Math.max(1, tops.length);
+      }
+
+      function shrinkText(element, { minSize, maxLines = 1, step = 0.5 } = {}) {
+        element.style.removeProperty("font-size");
+        element.style.removeProperty("line-height");
+
+        const computed = window.getComputedStyle(element);
+        let fontSize = parseFloat(computed.fontSize) || 40;
+        let lineHeight = parseFloat(computed.lineHeight) || fontSize * 0.92;
+        const targetMin = minSize || Math.max(18, fontSize * 0.65);
+        let guard = 0;
+
+        const apply = () => {
+          element.style.fontSize = fontSize + "px";
+          element.style.lineHeight = lineHeight + "px";
+        };
+
+        apply();
+
+        while (
+          guard < 160 &&
+          fontSize > targetMin &&
+          (
+            element.scrollWidth > element.clientWidth + 1 ||
+            renderedLineCount(element) > maxLines
+          )
+        ) {
+          fontSize = Math.max(targetMin, fontSize - step);
+          lineHeight = fontSize * 0.92;
+          apply();
+          guard += 1;
+        }
+      }
+
+      function fitTextBlocks() {
+        document.querySelectorAll(".fit-single-meta").forEach((element) => {
+          shrinkText(element, { minSize: 28, maxLines: 1, step: 0.5 });
+        });
+
+        document.querySelectorAll(".fit-single-name").forEach((element) => {
+          shrinkText(element, { minSize: 26, maxLines: 2, step: 0.5 });
+        });
+      }
+
       function waitForImages() {
         return Promise.all([...document.images].map((image) => {
           if (image.complete) return Promise.resolve();
@@ -137,6 +152,7 @@ function fitScript() {
       async function prepareLayout() {
         await document.fonts.ready;
         await waitForImages();
+        fitTextBlocks();
         await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
       }
 
@@ -190,13 +206,16 @@ function fitScript() {
       }
 
       init();
-      window.addEventListener("resize", fit);
+      window.addEventListener("resize", async () => {
+        await prepareLayout();
+        fit();
+      });
     })();
   `;
 }
 
 export function singleMatchOptionLabel(match) {
-  const perspective = ownPerspective(match);
+  const perspective = ownTeamPerspective(match);
   if (!perspective) return null;
 
   const label = perspective.teamLabel;
@@ -207,7 +226,7 @@ export function singleMatchOptionLabel(match) {
 }
 
 export function buildSingleSlide(match, { overrides = {}, logoManifest = {}, resultMode = false } = {}) {
-  const perspective = ownPerspective(match);
+  const perspective = ownTeamPerspective(match);
   if (!perspective) return null;
 
   const teamLabel = overrides.teamLabel ?? perspective.teamLabel;
@@ -256,6 +275,9 @@ export function renderSingleSlideDocument(slide, baseHref) {
     ? `<img class="single-headline__asset" src="${escapeHtml(headlineAsset)}" alt="${escapeHtml(slide.headline)}">`
     : escapeHtml(slide.headline);
 
+  const homeName = renderBreakableName(slide.homeDisplayName);
+  const awayName = renderBreakableName(slide.awayDisplayName);
+
   return `<!doctype html>
 <html lang="de">
 <head>
@@ -270,8 +292,8 @@ export function renderSingleSlideDocument(slide, baseHref) {
     <div class="single-headline">${headlineMarkup}</div>
 
     <div class="single-meta">
-      <div class="single-meta__line">${escapeHtml(slide.meta)}</div>
-      <div class="single-meta__venue">${escapeHtml(slide.venue)}</div>
+      <div class="single-meta__line fit-single-meta">${escapeHtml(slide.meta)}</div>
+      <div class="single-meta__venue fit-single-meta">${escapeHtml(slide.venue)}</div>
     </div>
 
     <div class="single-logos">
@@ -281,7 +303,7 @@ export function renderSingleSlideDocument(slide, baseHref) {
 
     <div class="single-card ${slide.isResult ? "single-card--result" : ""}">
       ${slide.isResult ? `
-        <div class="single-card__home">${escapeHtml(slide.homeDisplayName)}</div>
+        <div class="single-card__home"><div class="single-card__name-text fit-single-name">${homeName}</div></div>
 
         <div class="single-card__score" aria-label="${escapeHtml(`${slide.homeScore ?? "-"} zu ${slide.awayScore ?? "-"}`)}">
           <span class="single-card__score-number">${escapeHtml(slide.homeScore ?? "-")}</span>
@@ -289,20 +311,20 @@ export function renderSingleSlideDocument(slide, baseHref) {
           <span class="single-card__score-number">${escapeHtml(slide.awayScore ?? "-")}</span>
         </div>
 
-        <div class="single-card__away">${escapeHtml(slide.awayDisplayName)}</div>
+        <div class="single-card__away"><div class="single-card__name-text fit-single-name">${awayName}</div></div>
       ` : `
         <div class="single-card__time">
           <div class="single-card__time-main">${escapeHtml(slide.time)}</div>
           <div class="single-card__time-label">UHR</div>
         </div>
 
-        <div class="single-card__home">${escapeHtml(slide.homeDisplayName)}</div>
+        <div class="single-card__home"><div class="single-card__name-text fit-single-name">${homeName}</div></div>
 
         <div class="single-card__vs" aria-hidden="true">
           <img src="assets/canva/vs-divider.png" alt="">
         </div>
 
-        <div class="single-card__away">${escapeHtml(slide.awayDisplayName)}</div>
+        <div class="single-card__away"><div class="single-card__name-text fit-single-name">${awayName}</div></div>
       `}
     </div>
   </div>

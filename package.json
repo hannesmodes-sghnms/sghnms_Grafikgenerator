@@ -1,6 +1,6 @@
 {
   "name": "handball-social-generator",
-  "version": "1.2.0-prototype",
+  "version": "1.3.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -8,15 +8,20 @@
     "update:data": "node scripts/update-matches.js",
     "logos:sync": "node scripts/logo-sync.js",
     "logos:seed-overrides": "node scripts/seed-logo-overrides.js",
-    "logos:audit": "node scripts/logo-audit.js",
+    "logos:optimize": "node scripts/logo-optimize.js",
+    "qa": "node scripts/qa.js",
+    "qa:deploy": "node scripts/qa.js --deploy",
     "prepare:static": "node scripts/prepare-static.js",
-    "build": "npm run update:data && npm run prepare:static"
+    "prepare:pages": "node scripts/prepare-pages.js",
+    "build": "npm run update:data && npm run qa:deploy && npm run prepare:static && npm run prepare:pages"
   },
   "engines": {
     "node": ">=20"
   },
   "dependencies": {
-    "html2canvas": "^1.4.1",
+    "html2canvas": "^1.4.1"
+  },
+  "devDependencies": {
     "sharp": "^0.34.3"
   }
 }
