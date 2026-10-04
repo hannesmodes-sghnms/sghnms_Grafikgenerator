@@ -68,6 +68,8 @@ body {
   width: auto;
   height: auto;
   object-fit: contain;
+  transform: scale(1.55);
+  transform-origin: center;
 }
 
 .single-meta {
@@ -166,7 +168,7 @@ body {
 }
 
 .single-card--result {
-  grid-template-columns: 1fr 245px 1fr;
+  grid-template-columns: 1fr 290px 1fr;
 }
 
 .single-card__time {
@@ -205,21 +207,35 @@ body {
 }
 
 .single-card__score {
+  width: 290px;
   height: 100%;
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: center;
+  justify-self: center;
+  justify-items: stretch;
+  column-gap: 5px;
   color: var(--score-red);
   font-size: 137px;
   line-height: .82;
   font-weight: 700;
   letter-spacing: -.035em;
   white-space: nowrap;
+  transform: translateY(10px);
+}
+
+.single-card__score-number:first-child {
+  text-align: right;
+}
+
+.single-card__score-number:last-child {
+  text-align: left;
 }
 
 .single-card__score-separator {
-  display: inline-block;
-  margin: 0 4px;
+  display: block;
+  text-align: center;
+  margin: 0;
 }
 
 .single-card__vs {
