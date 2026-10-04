@@ -4,7 +4,20 @@ const slides = document.querySelector("#slides");
 const STORY_WIDTH = 1122;
 const POST_HEIGHT = 1402;
 const STORY_HEIGHT = 1994;
-const STORY_OFFSET_Y = (STORY_HEIGHT - POST_HEIGHT) / 2;
+const STORY_Y_SCALE = STORY_HEIGHT / POST_HEIGHT;
+
+const OVERVIEW_GROUPS = [
+  ".title-wrap",
+  ".meta-bar",
+  ".matches"
+];
+
+const SINGLE_GROUPS = [
+  ".single-headline",
+  ".single-meta",
+  ".single-logos",
+  ".single-card"
+];
 
 function currentFormat() {
   return formatInput?.value === "story" ? "story" : "post";
@@ -30,22 +43,39 @@ function toPngBlob(canvas) {
   });
 }
 
-function ensureSingleContentLayer(root, doc) {
-  let layer = root.querySelector(":scope > .story-content-layer");
-  if (layer) return layer;
+function distributeGroupsVertically(root, win) {
+  const selectors = root.id === "single-slide-root"
+    ? SINGLE_GROUPS
+    : OVERVIEW_GROUPS;
 
-  layer = doc.createElement("div");
-  layer.className = "story-content-layer";
-  layer.style.position = "relative";
-  layer.style.width = `${STORY_WIDTH}px`;
-  layer.style.height = `${POST_HEIGHT}px`;
-  layer.style.zIndex = "2";
+  selectors.forEach((selector) => {
+    const element = root.querySelector(selector);
+    if (!element) return;
 
-  const children = [...root.children];
-  children.forEach((child) => layer.appendChild(child));
-  root.appendChild(layer);
+    const computed = win.getComputedStyle(element);
+    const baseTop = Number.parseFloat(computed.top);
 
-  return layer;
+    if (!Number.isFinite(baseTop)) return;
+
+    element.style.top = `${Math.round(baseTop * STORY_Y_SCALE)}px`;
+  });
+}
+
+function enlargeStoryHeadline(root) {
+  if (root.id === "single-slide-root") {
+    const headline = root.querySelector(".single-headline");
+    if (!headline) return;
+
+    headline.style.transform = "scale(1.16)";
+    headline.style.transformOrigin = "center center";
+    return;
+  }
+
+  const headline = root.querySelector(".title-wrap");
+  if (!headline) return;
+
+  headline.style.transform = "scale(1.08)";
+  headline.style.transformOrigin = "center top";
 }
 
 function applyStoryLayout(iframe) {
@@ -63,10 +93,15 @@ function applyStoryLayout(iframe) {
   root.classList.add("format-story");
   root.style.height = `${STORY_HEIGHT}px`;
 
-  const overviewLayer = root.querySelector(":scope > .slide-inner");
-  const contentLayer = overviewLayer || ensureSingleContentLayer(root, doc);
-  contentLayer.style.transform = `translateY(${STORY_OFFSET_Y}px)`;
-  contentLayer.style.transformOrigin = "top left";
+  /*
+   * Story ist kein verschobener 4:5-Block mehr. Die Hauptgruppen behalten
+   * ihre Groesse, ihre vertikale Position wird aber proportional von der
+   * 1402px-Beitragshoehe auf die 1994px-Storyhoehe umgerechnet. Dadurch
+   * wachsen die Abstaende zwischen Headline, Meta, Logos/Cards und dem Rand
+   * mit der Gesamthoehe, ohne das eigentliche Layout horizontal zu veraendern.
+   */
+  distributeGroupsVertically(root, win);
+  enlargeStoryHeadline(root);
 
   const fitStory = () => {
     const scale = Math.min(1, win.innerWidth / STORY_WIDTH);
@@ -123,7 +158,7 @@ function applyStoryLayout(iframe) {
   });
 
   // Die bestehenden Renderer initialisieren ihren 1122x1402-Viewport asynchron.
-  // Ein kurzer Nachlauf stellt sicher, dass der Story-Viewport anschließend gewinnt.
+  // Ein kurzer Nachlauf stellt sicher, dass der Story-Viewport anschliessend gewinnt.
   win.setTimeout(fitStory, 80);
 }
 
