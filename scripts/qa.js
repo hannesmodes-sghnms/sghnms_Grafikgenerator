@@ -46,6 +46,7 @@ async function main() {
   const requiredFiles = [
     "public/index.html",
     "public/app.js",
+    "public/story-format.js",
     "public/match-utils.js",
     "public/single-match.js",
     "public/slide-base.css",
@@ -68,7 +69,13 @@ async function main() {
     }
   }
 
-  ["public/app.js", "public/match-utils.js", "public/single-match.js", "scripts/update-matches.js"].forEach(checkSyntax);
+  [
+    "public/app.js",
+    "public/story-format.js",
+    "public/match-utils.js",
+    "public/single-match.js",
+    "scripts/update-matches.js"
+  ].forEach(checkSyntax);
 
   const matchesPath = path.join(PUBLIC, "data", "matches.json");
   if (!(await exists(matchesPath))) {
