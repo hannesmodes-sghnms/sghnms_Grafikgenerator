@@ -43,16 +43,13 @@ body {
   width: var(--canvas-width);
   height: var(--canvas-height);
   overflow: hidden;
-  /*
-   * Canva uses the background image slightly zoomed/cropped instead of
-   * showing the complete source image. A centered 124% crop reproduces that
-   * framing: the upper and lower brush bands move farther towards the canvas
-   * edges and the headline sits on the dark-blue area instead of the brushes.
-   */
-  background-image: url("assets/canva/slide-bg.png");
-  background-position: center center;
-  background-size: 124% auto;
-  background-repeat: no-repeat;
+  background-color: #071f53;
+  background-image:
+    url("assets/sghnms_images/sghnms_bg.png"),
+    url("assets/canva/slide-bg.png");
+  background-position: center, center;
+  background-repeat: no-repeat, no-repeat;
+  background-size: cover, cover;
   color: white;
   font-family: "Bebas Neue", Arial, sans-serif;
   font-synthesis: none;
@@ -138,10 +135,9 @@ body {
 
 .single-logo {
   display: block;
-  max-width: 300px;
-  max-height: 300px;
+  height: 300px;
   width: auto;
-  height: auto;
+  max-width: 100%;
   object-fit: contain;
 }
 
