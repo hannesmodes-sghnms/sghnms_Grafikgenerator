@@ -1,0 +1,238 @@
+@font-face {
+  font-family: "Bebas Neue";
+  src: url("assets/fonts/BebasNeue-Bold.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 700;
+  font-display: block;
+}
+
+@font-face {
+  font-family: "Edo";
+  src: url("assets/fonts/edo.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+}
+
+:root {
+  --canvas-width: 1122px;
+  --canvas-height: 1402px;
+  --brand-blue: #001f44;
+  --copy-blue: #0d2f69;
+  --copy-grey: #565656;
+  --score-red: #bf0b0f;
+}
+
+* { box-sizing: border-box; }
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background: transparent;
+}
+
+body {
+  width: var(--canvas-width);
+  min-height: 1px;
+}
+
+.single-slide {
+  position: relative;
+  width: var(--canvas-width);
+  height: var(--canvas-height);
+  overflow: hidden;
+  background: url("assets/canva/slide-bg.png") center/100% 100% no-repeat;
+  color: white;
+  font-family: "Bebas Neue", Arial, sans-serif;
+  font-synthesis: none;
+  transform-origin: top left;
+}
+
+.single-headline {
+  position: absolute;
+  top: 103px;
+  left: 80px;
+  width: 962px;
+  height: 175px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.single-headline__asset {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}
+
+.single-meta {
+  position: absolute;
+  top: 337px;
+  left: 35px;
+  width: 1052px;
+  min-height: 122px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 8px 34px 7px;
+  border: 3px solid rgba(255,255,255,.82);
+  border-radius: 22px;
+  overflow: hidden;
+  background: rgba(0, 31, 68, .95);
+  text-align: center;
+}
+
+.single-meta__line {
+  font-size: 43px;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.single-meta__venue {
+  font-size: 39px;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.single-logos {
+  position: absolute;
+  top: 507px;
+  left: 90px;
+  width: 942px;
+  height: 340px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 82px;
+  align-items: center;
+}
+
+.single-logo-slot {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.single-logo {
+  display: block;
+  max-width: 300px;
+  max-height: 300px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}
+
+.single-logo-placeholder {
+  width: 250px;
+  height: 250px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 28px;
+  border: 5px solid rgba(255,255,255,.78);
+  background: rgba(0,31,68,.82);
+  color: white;
+  text-align: center;
+  font-size: 52px;
+  line-height: .9;
+}
+
+.single-card {
+  position: absolute;
+  top: 958px;
+  left: 61px;
+  width: 1000px;
+  height: 192px;
+  display: grid;
+  grid-template-columns: 245px 315px 110px 330px;
+  align-items: center;
+  overflow: hidden;
+  border-radius: 20px;
+  background: rgba(255,255,255,.98);
+  color: var(--copy-blue);
+}
+
+.single-card--result {
+  grid-template-columns: 1fr 245px 1fr;
+}
+
+.single-card__time {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding-top: 6px;
+  color: var(--copy-grey);
+}
+
+.single-card__time-main {
+  font-size: 112px;
+  line-height: .72;
+  letter-spacing: -.03em;
+}
+
+.single-card__time-label {
+  margin-top: 8px;
+  font-size: 58px;
+  line-height: .8;
+}
+
+.single-card__home,
+.single-card__away {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 14px 18px;
+  text-align: center;
+  text-transform: uppercase;
+  font-size: 44px;
+  line-height: .92;
+}
+
+.single-card__score {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--score-red);
+  font-size: 137px;
+  line-height: .82;
+  font-weight: 700;
+  letter-spacing: -.035em;
+  white-space: nowrap;
+}
+
+.single-card__score-separator {
+  display: inline-block;
+  margin: 0 4px;
+}
+
+.single-card__vs {
+  position: relative;
+  width: 109px;
+  height: 176px;
+  justify-self: center;
+}
+
+.single-card__vs img {
+  position: absolute;
+  left: -5px;
+  top: 2px;
+  width: 109px;
+  height: 176px;
+}
