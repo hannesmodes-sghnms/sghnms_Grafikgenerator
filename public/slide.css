@@ -263,7 +263,16 @@
   line-height: 0.8;
 }
 
+/* Ergebnis: Der Doppelpunkt bildet die optische Mitte der 245-px-Center-Spalte.
+ * Linke und rechte Zahl bekommen gleich breite Bereiche. Dadurch bleiben auch
+ * asymmetrische Ergebnisse wie 15:7 oder 9:21 horizontal sauber zentriert. */
 .score {
+  width: 245px;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  justify-items: stretch;
+  column-gap: 4px;
   color: var(--score-red);
   font-size: 137px;
   line-height: 0.82;
@@ -271,9 +280,18 @@
   white-space: nowrap;
 }
 
+.score-number:first-child {
+  text-align: right;
+}
+
+.score-number:last-child {
+  text-align: left;
+}
+
 .score-separator {
-  display: inline-block;
-  margin: 0 4px;
+  display: block;
+  margin: 0;
+  text-align: center;
 }
 
 .vs-box {
