@@ -34,7 +34,8 @@ function setDefaultRange() {
 }
 
 function refreshSingleMatchOptions() {
-  const isSingle = modeInput.value === "single";
+  const isSingle = modeInput.value === "single" || modeInput.value === "single-result";
+  const isSingleResult = modeInput.value === "single-result";
   singleMatchField.hidden = !isSingle;
   form.classList.toggle("controls--single", isSingle);
 
@@ -46,6 +47,7 @@ function refreshSingleMatchOptions() {
 
   const options = dataSet.matches
     .filter((match) => (!from || match.date >= from) && (!to || match.date <= to))
+    .filter((match) => !isSingleResult || isFinished(match))
     .map((match) => ({ match, label: singleMatchOptionLabel(match) }))
     .filter((item) => item.label);
 
@@ -762,7 +764,7 @@ function slideCard(slide, mode) {
   return article;
 }
 
-function singleSlideCard(rawMatch) {
+function singleSlideCard(rawMatch, { resultMode = false } = {}) {
   const article = document.createElement("article");
   article.className = "slide-card";
 
@@ -780,16 +782,20 @@ function singleSlideCard(rawMatch) {
 
   const makeSlide = () => buildSingleSlide(rawMatch, {
     overrides: matchOverrides.get(String(rawMatch.id)) || {},
-    logoManifest
+    logoManifest,
+    resultMode
   });
 
   const firstSlide = makeSlide();
+  const headerValue = resultMode && rawMatch.result
+    ? `${rawMatch.result.home}:${rawMatch.result.away}`
+    : rawMatch.time;
 
   article.innerHTML = `
     <div class="slide-card__header">
       <div>
         <h2>${escapeHtml(firstSlide?.headline || "Einzelspiel")}</h2>
-        <p>${escapeHtml(rawMatch.dateText)} · ${escapeHtml(rawMatch.time)} · ${escapeHtml(own.teamLabel)} vs. ${escapeHtml(own.opponent?.name || "")}</p>
+        <p>${escapeHtml(rawMatch.dateText)} · ${escapeHtml(headerValue)} · ${escapeHtml(own.teamLabel)} vs. ${escapeHtml(own.opponent?.name || "")}</p>
         <div class="single-slide-meta">
           <span>${escapeHtml(rawMatch.competition || "")}</span>
           <span>${escapeHtml(rawMatch.phase?.name || "")}</span>
@@ -804,13 +810,13 @@ function singleSlideCard(rawMatch) {
 
     <div class="override-panel" hidden>
       <div class="override-panel__hint">
-        Für den Prototypen gelten die bestehenden Text-Overrides auch für den Einzelspiel-Slide.
+        ${resultMode ? "Text- und Ergebnis-Overrides gelten für den Einzelergebnis-Slide." : "Die bestehenden Text-Overrides gelten auch für den Einzelspiel-Slide."}
       </div>
-      ${renderOverrideRow(baseMatch, "gameday")}
+      ${renderOverrideRow(baseMatch, resultMode ? "results" : "gameday")}
     </div>
 
     ${firstSlide && !hasLocalLogos(firstSlide)
-      ? '<div class="logo-warning">Mindestens ein Vereinslogo fehlt lokal. `npm run logos:audit` im Branch ausführen; bis dahin wird ein Platzhalter angezeigt.</div>'
+      ? '<div class="logo-warning">Mindestens ein Vereinslogo fehlt lokal. `npm run logos:sync` im Branch ausführen; bis dahin wird ein Platzhalter angezeigt.</div>'
       : ''}
 
     <div class="preview-wrap">
@@ -864,10 +870,16 @@ function singleSlideCard(rawMatch) {
     const teamInput = row.querySelector('[data-override-field="teamLabel"]');
     const opponentInput = row.querySelector('[data-override-field="opponent"]');
     const timeInput = row.querySelector('[data-override-field="time"]');
+    const scoreInput = row.querySelector('[data-override-field="score"]');
 
     if (teamInput) teamInput.value = baseMatch.teamLabel;
     if (opponentInput) opponentInput.value = baseMatch.opponent;
     if (timeInput) timeInput.value = baseMatch.time;
+    if (scoreInput) {
+      scoreInput.value = baseMatch.ownScore !== null && baseMatch.opponentScore !== null
+        ? `${baseMatch.ownScore}:${baseMatch.opponentScore}`
+        : "";
+    }
     row.querySelectorAll(".is-invalid").forEach((element) => element.classList.remove("is-invalid"));
     refreshPreview();
   });
@@ -953,7 +965,8 @@ form.addEventListener("submit", (event) => {
 
   slides.innerHTML = "";
 
-  if (mode === "single") {
+  if (mode === "single" || mode === "single-result") {
+    const resultMode = mode === "single-result";
     const selected = filteredMatches.find(
       (match) => String(match.id) === String(singleMatchInput.value)
     );
@@ -963,8 +976,13 @@ form.addEventListener("submit", (event) => {
       return;
     }
 
-    slides.appendChild(singleSlideCard(selected));
-    setStatus("Einzelspiel-Slide erzeugt.", "success");
+    if (resultMode && !isFinished(selected)) {
+      setStatus("Für das ausgewählte Spiel liegt noch kein Ergebnis vor.", "empty");
+      return;
+    }
+
+    slides.appendChild(singleSlideCard(selected, { resultMode }));
+    setStatus(resultMode ? "Einzelergebnis-Slide erzeugt." : "Einzelspiel-Slide erzeugt.", "success");
     return;
   }
 

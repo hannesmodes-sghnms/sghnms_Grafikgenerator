@@ -20,6 +20,7 @@
   --brand-blue: #001f44;
   --copy-blue: #0d2f69;
   --copy-grey: #565656;
+  --score-red: #bf0b0f;
 }
 
 * { box-sizing: border-box; }
@@ -58,16 +59,15 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: "Edo", "Bebas Neue", Arial, sans-serif;
-  font-size: 142px;
-  line-height: 0.9;
-  letter-spacing: 0.01em;
-  text-align: center;
-  text-transform: uppercase;
-  transform: rotate(-3.5deg);
-  transform-origin: center;
-  text-shadow: 9px 9px 0 rgba(0, 31, 68, 0.52);
-  white-space: nowrap;
+}
+
+.single-headline__asset {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
 }
 
 .single-meta {
@@ -165,6 +165,10 @@ body {
   color: var(--copy-blue);
 }
 
+.single-card--result {
+  grid-template-columns: 1fr 245px 1fr;
+}
+
 .single-card__time {
   height: 100%;
   display: flex;
@@ -198,6 +202,24 @@ body {
   text-transform: uppercase;
   font-size: 44px;
   line-height: .92;
+}
+
+.single-card__score {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--score-red);
+  font-size: 137px;
+  line-height: .82;
+  font-weight: 700;
+  letter-spacing: -.035em;
+  white-space: nowrap;
+}
+
+.single-card__score-separator {
+  display: inline-block;
+  margin: 0 4px;
 }
 
 .single-card__vs {

@@ -69,6 +69,16 @@ function compactTeamLabel(value = "") {
   return text.replace(/\s+1$/, "");
 }
 
+function headlineAssetFor(headline = "") {
+  const assets = {
+    HEIMSPIEL: "assets/headlines/heimspiel.png",
+    "AUSWÄRTS": "assets/headlines/auswaerts.png",
+    ERGEBNIS: "assets/headlines/ergebnis.png"
+  };
+
+  return assets[String(headline).trim().toUpperCase()] || null;
+}
+
 function manifestAssetForTeam(team, logoManifest) {
   if (!team) return null;
 
@@ -196,7 +206,7 @@ export function singleMatchOptionLabel(match) {
   return `${match.dateText} · ${match.time} · ${label} · ${opponent} · ${place}`;
 }
 
-export function buildSingleSlide(match, { overrides = {}, logoManifest = {} } = {}) {
+export function buildSingleSlide(match, { overrides = {}, logoManifest = {}, resultMode = false } = {}) {
   const perspective = ownPerspective(match);
   if (!perspective) return null;
 
@@ -210,10 +220,17 @@ export function buildSingleSlide(match, { overrides = {}, logoManifest = {} } = 
   const sgDisplayName = "SG HANDBALL NEUMÜNSTER";
   const homeDisplayName = perspective.isHome ? sgDisplayName : opponentName;
   const awayDisplayName = perspective.isHome ? opponentName : sgDisplayName;
+  const rawOwnScore = perspective.isHome ? match.result?.home : match.result?.away;
+  const rawOpponentScore = perspective.isHome ? match.result?.away : match.result?.home;
+  const ownScore = overrides.ownScore ?? rawOwnScore ?? null;
+  const opponentScore = overrides.opponentScore ?? rawOpponentScore ?? null;
+  const homeScore = perspective.isHome ? ownScore : opponentScore;
+  const awayScore = perspective.isHome ? opponentScore : ownScore;
 
   return {
     id: match.id,
-    headline: perspective.isHome ? "HEIMSPIEL" : "AUSWÄRTS",
+    headline: resultMode ? "ERGEBNIS" : (perspective.isHome ? "HEIMSPIEL" : "AUSWÄRTS"),
+    isResult: resultMode,
     isHome: perspective.isHome,
     meta: metaParts.join("  |  "),
     venue,
@@ -222,16 +239,22 @@ export function buildSingleSlide(match, { overrides = {}, logoManifest = {} } = 
     opponentName,
     homeDisplayName,
     awayDisplayName,
+    homeScore,
+    awayScore,
     homeTeam: match.home,
     awayTeam: match.away,
     logoManifest,
-    filename: `${perspective.isHome ? "heimspiel" : "auswaerts"}-${slugify(teamLabel)}-${slugify(opponentName)}-${match.date}`
+    filename: `${resultMode ? "ergebnis" : (perspective.isHome ? "heimspiel" : "auswaerts")}-${slugify(teamLabel)}-${slugify(opponentName)}-${match.date}`
   };
 }
 
 export function renderSingleSlideDocument(slide, baseHref) {
   const homeLogo = renderLogo(slide.homeTeam, slide.logoManifest);
   const awayLogo = renderLogo(slide.awayTeam, slide.logoManifest);
+  const headlineAsset = headlineAssetFor(slide.headline);
+  const headlineMarkup = headlineAsset
+    ? `<img class="single-headline__asset" src="${escapeHtml(headlineAsset)}" alt="${escapeHtml(slide.headline)}">`
+    : escapeHtml(slide.headline);
 
   return `<!doctype html>
 <html lang="de">
@@ -244,7 +267,7 @@ export function renderSingleSlideDocument(slide, baseHref) {
 </head>
 <body>
   <div id="single-slide-root" class="single-slide">
-    <div class="single-headline">${escapeHtml(slide.headline)}</div>
+    <div class="single-headline">${headlineMarkup}</div>
 
     <div class="single-meta">
       <div class="single-meta__line">${escapeHtml(slide.meta)}</div>
@@ -256,19 +279,31 @@ export function renderSingleSlideDocument(slide, baseHref) {
       <div class="single-logo-slot">${awayLogo}</div>
     </div>
 
-    <div class="single-card">
-      <div class="single-card__time">
-        <div class="single-card__time-main">${escapeHtml(slide.time)}</div>
-        <div class="single-card__time-label">UHR</div>
-      </div>
+    <div class="single-card ${slide.isResult ? "single-card--result" : ""}">
+      ${slide.isResult ? `
+        <div class="single-card__home">${escapeHtml(slide.homeDisplayName)}</div>
 
-      <div class="single-card__home">${escapeHtml(slide.homeDisplayName)}</div>
+        <div class="single-card__score" aria-label="${escapeHtml(`${slide.homeScore ?? "-"} zu ${slide.awayScore ?? "-"}`)}">
+          <span class="single-card__score-number">${escapeHtml(slide.homeScore ?? "-")}</span>
+          <span class="single-card__score-separator">:</span>
+          <span class="single-card__score-number">${escapeHtml(slide.awayScore ?? "-")}</span>
+        </div>
 
-      <div class="single-card__vs" aria-hidden="true">
-        <img src="assets/canva/vs-divider.png" alt="">
-      </div>
+        <div class="single-card__away">${escapeHtml(slide.awayDisplayName)}</div>
+      ` : `
+        <div class="single-card__time">
+          <div class="single-card__time-main">${escapeHtml(slide.time)}</div>
+          <div class="single-card__time-label">UHR</div>
+        </div>
 
-      <div class="single-card__away">${escapeHtml(slide.awayDisplayName)}</div>
+        <div class="single-card__home">${escapeHtml(slide.homeDisplayName)}</div>
+
+        <div class="single-card__vs" aria-hidden="true">
+          <img src="assets/canva/vs-divider.png" alt="">
+        </div>
+
+        <div class="single-card__away">${escapeHtml(slide.awayDisplayName)}</div>
+      `}
     </div>
   </div>
 
