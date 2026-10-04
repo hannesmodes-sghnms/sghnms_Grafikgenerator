@@ -1,29 +1,30 @@
-SGHNMS Einzelspiel / Einzelergebnis - Headline Images
-=====================================================
+SGHNMS Einzelspiel-Ergebnis-Slide
+=================================
 
-Diese beiden Dateien ersetzen die bestehenden Dateien nach Anwendung des
-Einzelergebnis-Patches.
+Basis: Branch feature/einzelspiel-slide
 
-Verwendete Assets aus public/assets/headlines/:
-- heimspiel.png
-- auswaerts.png
-- ergebnis.png
+Enthaltene Aenderungen:
+- neue Variante "Einzelergebnis"
+- in dieser Variante werden nur abgeschlossene Spiele angeboten
+- Headline "ERGEBNIS"
+- Uhrzeit faellt aus der Match-Card heraus
+- VS-Element wird durch das Ergebnis ersetzt
+- Ergebnis-Design wie bei den gesammelten Ergebnis-Slides:
+  Bebas Neue, #bf0b0f, 137px, Doppelpunkt
+- Heimteam bleibt links, Auswaertsteam rechts
+- Ergebnis wird immer in Heim:Auswaerts-Reihenfolge dargestellt
+- Ergebnis-Override bleibt moeglich
 
-Aenderungen:
-- Text-Headline HEIMSPIEL -> heimspiel.png
-- Text-Headline AUSWAERTS -> auswaerts.png
-- Text-Headline ERGEBNIS -> ergebnis.png
-- keine CSS-Rotation / Textschatten mehr; die Canva-Gestaltung kommt aus dem PNG
-- Einzelergebnis-Logik aus dem vorherigen Patch bleibt enthalten
+Anwendung im Codespace:
 
-Dateien ersetzen:
-- public/single-match.js
-- public/single-slide.css
-
-Danach:
+  git checkout feature/einzelspiel-slide
+  git pull origin feature/einzelspiel-slide
+  git apply single-result.patch
   npm start
 
-Wenn die Darstellung passt:
-  git add public/single-match.js public/single-slide.css public/app.js public/index.html public/assets/headlines
-  git commit -m "Add single match result slides and headline assets"
+Danach pruefen und committen:
+
+  git status
+  git add public/index.html public/app.js public/single-match.js public/single-slide.css
+  git commit -m "Add single match result slide"
   git push origin feature/einzelspiel-slide

@@ -1,0 +1,255 @@
+diff --git a/public/index.html b/public/index.html
+--- a/public/index.html
++++ b/public/index.html
+@@ -27,6 +27,7 @@
+             <option value="gameday">Spieltag</option>
+             <option value="results">Ergebnisse</option>
+             <option value="single">Einzelspiel</option>
++            <option value="single-result">Einzelergebnis</option>
+           </select>
+         </label>
+ 
+diff --git a/public/app.js b/public/app.js
+--- a/public/app.js
++++ b/public/app.js
+@@ -34,11 +34,12 @@ function setDefaultRange() {
+ }
+ 
+ function refreshSingleMatchOptions() {
+-  const isSingle = modeInput.value === "single";
++  const isSingle = modeInput.value === "single" || modeInput.value === "single-result";
++  const isSingleResult = modeInput.value === "single-result";
+   singleMatchField.hidden = !isSingle;
+   form.classList.toggle("controls--single", isSingle);
+ 
+   if (!isSingle || !dataSet?.matches) return;
+@@ -46,6 +47,7 @@ function refreshSingleMatchOptions() {
+ 
+   const options = dataSet.matches
+     .filter((match) => (!from || match.date >= from) && (!to || match.date <= to))
++    .filter((match) => !isSingleResult || isFinished(match))
+     .map((match) => ({ match, label: singleMatchOptionLabel(match) }))
+     .filter((item) => item.label);
+ 
+@@ -762,7 +764,7 @@ function slideCard(slide, mode) {
+   return article;
+ }
+ 
+-function singleSlideCard(rawMatch) {
++function singleSlideCard(rawMatch, { resultMode = false } = {}) {
+   const article = document.createElement("article");
+   article.className = "slide-card";
+ 
+@@ -780,11 +782,12 @@ function singleSlideCard(rawMatch) {
+ 
+   const makeSlide = () => buildSingleSlide(rawMatch, {
+     overrides: matchOverrides.get(String(rawMatch.id)) || {},
+-    logoManifest
++    logoManifest,
++    resultMode
+   });
+ 
+   const firstSlide = makeSlide();
++  const headerValue = resultMode && rawMatch.result ? `${rawMatch.result.home}:${rawMatch.result.away}` : rawMatch.time;
+ 
+   article.innerHTML = `
+     <div class="slide-card__header">
+       <div>
+         <h2>${escapeHtml(firstSlide?.headline || "Einzelspiel")}</h2>
+-        <p>${escapeHtml(rawMatch.dateText)} · ${escapeHtml(rawMatch.time)} · ${escapeHtml(own.teamLabel)} vs. ${escapeHtml(own.opponent?.name || "")}</p>
++        <p>${escapeHtml(rawMatch.dateText)} · ${escapeHtml(headerValue)} · ${escapeHtml(own.teamLabel)} vs. ${escapeHtml(own.opponent?.name || "")}</p>
+         <div class="single-slide-meta">
+           <span>${escapeHtml(rawMatch.competition || "")}</span>
+           <span>${escapeHtml(rawMatch.phase?.name || "")}</span>
+@@ -804,13 +807,13 @@ function singleSlideCard(rawMatch) {
+ 
+     <div class="override-panel" hidden>
+       <div class="override-panel__hint">
+-        Für den Prototypen gelten die bestehenden Text-Overrides auch für den Einzelspiel-Slide.
++        ${resultMode ? "Text- und Ergebnis-Overrides gelten für den Einzelergebnis-Slide." : "Die bestehenden Text-Overrides gelten auch für den Einzelspiel-Slide."}
+       </div>
+-      ${renderOverrideRow(baseMatch, "gameday")}
++      ${renderOverrideRow(baseMatch, resultMode ? "results" : "gameday")}
+     </div>
+ 
+     ${firstSlide && !hasLocalLogos(firstSlide)
+-      ? '<div class="logo-warning">Mindestens ein Vereinslogo fehlt lokal. `npm run logos:audit` im Branch ausführen; bis dahin wird ein Platzhalter angezeigt.</div>'
++      ? '<div class="logo-warning">Mindestens ein Vereinslogo fehlt lokal. `npm run logos:sync` im Branch ausführen; bis dahin wird ein Platzhalter angezeigt.</div>'
+       : ''}
+@@ -864,10 +867,16 @@ function singleSlideCard(rawMatch) {
+     const teamInput = row.querySelector('[data-override-field="teamLabel"]');
+     const opponentInput = row.querySelector('[data-override-field="opponent"]');
+     const timeInput = row.querySelector('[data-override-field="time"]');
++    const scoreInput = row.querySelector('[data-override-field="score"]');
+ 
+     if (teamInput) teamInput.value = baseMatch.teamLabel;
+     if (opponentInput) opponentInput.value = baseMatch.opponent;
+     if (timeInput) timeInput.value = baseMatch.time;
++    if (scoreInput) {
++      scoreInput.value = baseMatch.ownScore !== null && baseMatch.opponentScore !== null
++        ? `${baseMatch.ownScore}:${baseMatch.opponentScore}`
++        : "";
++    }
+     row.querySelectorAll(".is-invalid").forEach((element) => element.classList.remove("is-invalid"));
+     refreshPreview();
+   });
+@@ -953,7 +962,8 @@ form.addEventListener("submit", (event) => {
+ 
+   slides.innerHTML = "";
+ 
+-  if (mode === "single") {
++  if (mode === "single" || mode === "single-result") {
++    const resultMode = mode === "single-result";
+     const selected = filteredMatches.find(
+       (match) => String(match.id) === String(singleMatchInput.value)
+     );
+@@ -963,8 +973,13 @@ form.addEventListener("submit", (event) => {
+       return;
+     }
+ 
+-    slides.appendChild(singleSlideCard(selected));
+-    setStatus("Einzelspiel-Slide erzeugt.", "success");
++    if (resultMode && !isFinished(selected)) {
++      setStatus("Für das ausgewählte Spiel liegt noch kein Ergebnis vor.", "empty");
++      return;
++    }
++
++    slides.appendChild(singleSlideCard(selected, { resultMode }));
++    setStatus(resultMode ? "Einzelergebnis-Slide erzeugt." : "Einzelspiel-Slide erzeugt.", "success");
+     return;
+   }
+ 
+diff --git a/public/single-match.js b/public/single-match.js
+--- a/public/single-match.js
++++ b/public/single-match.js
+@@ -137,7 +137,7 @@ export function singleMatchOptionLabel(match) {
+   return `${match.dateText} · ${match.time} · ${label} · ${opponent} · ${place}`;
+ }
+ 
+-export function buildSingleSlide(match, { overrides = {}, logoManifest = {} } = {}) {
++export function buildSingleSlide(match, { overrides = {}, logoManifest = {}, resultMode = false } = {}) {
+   const perspective = ownPerspective(match);
+   if (!perspective) return null;
+ 
+@@ -149,11 +149,19 @@ export function buildSingleSlide(match, { overrides = {}, logoManifest = {} } = {}) {
+   const sgDisplayName = "SG HANDBALL NEUMÜNSTER";
+   const homeDisplayName = perspective.isHome ? sgDisplayName : opponentName;
+   const awayDisplayName = perspective.isHome ? opponentName : sgDisplayName;
++  const rawOwnScore = perspective.isHome ? match.result?.home : match.result?.away;
++  const rawOpponentScore = perspective.isHome ? match.result?.away : match.result?.home;
++  const ownScore = overrides.ownScore ?? rawOwnScore ?? null;
++  const opponentScore = overrides.opponentScore ?? rawOpponentScore ?? null;
++  const homeScore = perspective.isHome ? ownScore : opponentScore;
++  const awayScore = perspective.isHome ? opponentScore : ownScore;
+ 
+   return {
+     id: match.id,
+-    headline: perspective.isHome ? "HEIMSPIEL" : "AUSWÄRTS",
++    headline: resultMode ? "ERGEBNIS" : (perspective.isHome ? "HEIMSPIEL" : "AUSWÄRTS"),
++    isResult: resultMode,
+     isHome: perspective.isHome,
+     meta: metaParts.join("  |  "),
+     venue,
+@@ -163,10 +171,12 @@ export function buildSingleSlide(match, { overrides = {}, logoManifest = {} } = {}) {
+     opponentName,
+     homeDisplayName,
+     awayDisplayName,
++    homeScore,
++    awayScore,
+     homeTeam: match.home,
+     awayTeam: match.away,
+     logoManifest,
+-    filename: `${perspective.isHome ? "heimspiel" : "auswaerts"}-${slugify(teamLabel)}-${slugify(opponentName)}-${match.date}`
++    filename: `${resultMode ? "ergebnis" : (perspective.isHome ? "heimspiel" : "auswaerts")}-${slugify(teamLabel)}-${slugify(opponentName)}-${match.date}`
+   };
+ }
+@@ -195,20 +205,31 @@ export function renderSingleSlideDocument(slide, baseHref) {
+       <div class="single-logo-slot">${awayLogo}</div>
+     </div>
+ 
+-    <div class="single-card">
+-      <div class="single-card__time">
+-        <div class="single-card__time-main">${escapeHtml(slide.time)}</div>
+-        <div class="single-card__time-label">UHR</div>
+-      </div>
+-
+-      <div class="single-card__home">${escapeHtml(slide.homeDisplayName)}</div>
+-
+-      <div class="single-card__vs" aria-hidden="true">
+-        <img src="assets/canva/vs-divider.png" alt="">
+-      </div>
+-
+-      <div class="single-card__away">${escapeHtml(slide.awayDisplayName)}</div>
++    <div class="single-card ${slide.isResult ? "single-card--result" : ""}">
++      ${slide.isResult ? `
++        <div class="single-card__home">${escapeHtml(slide.homeDisplayName)}</div>
++
++        <div class="single-card__score" aria-label="${escapeHtml(`${slide.homeScore ?? "-"} zu ${slide.awayScore ?? "-"}`)}">
++          <span class="single-card__score-number">${escapeHtml(slide.homeScore ?? "-")}</span>
++          <span class="single-card__score-separator">:</span>
++          <span class="single-card__score-number">${escapeHtml(slide.awayScore ?? "-")}</span>
++        </div>
++
++        <div class="single-card__away">${escapeHtml(slide.awayDisplayName)}</div>
++      ` : `
++        <div class="single-card__time">
++          <div class="single-card__time-main">${escapeHtml(slide.time)}</div>
++          <div class="single-card__time-label">UHR</div>
++        </div>
++
++        <div class="single-card__home">${escapeHtml(slide.homeDisplayName)}</div>
++
++        <div class="single-card__vs" aria-hidden="true">
++          <img src="assets/canva/vs-divider.png" alt="">
++        </div>
++
++        <div class="single-card__away">${escapeHtml(slide.awayDisplayName)}</div>
++      `}
+     </div>
+   </div>
+ 
+diff --git a/public/single-slide.css b/public/single-slide.css
+--- a/public/single-slide.css
++++ b/public/single-slide.css
+@@ -16,6 +16,7 @@
+   --brand-blue: #001f44;
+   --copy-blue: #0d2f69;
+   --copy-grey: #565656;
++  --score-red: #bf0b0f;
+ }
+@@ -122,6 +123,10 @@ body {
+   color: var(--copy-blue);
+ }
+ 
++.single-card--result {
++  grid-template-columns: 1fr 245px 1fr;
++}
++
+ .single-card__time {
+   height: 100%;
+   display: flex;
+@@ -158,6 +163,22 @@ body {
+   line-height: .92;
+ }
+ 
++.single-card__score {
++  height: 100%;
++  display: flex;
++  align-items: center;
++  justify-content: center;
++  color: var(--score-red);
++  font-size: 137px;
++  line-height: .82;
++  font-weight: 700;
++  letter-spacing: -.035em;
++  white-space: nowrap;
++}
++
++.single-card__score-separator {
++  display: inline-block;
++  margin: 0 4px;
++}
++
+ .single-card__vs {
+   position: relative;
+   width: 109px;
