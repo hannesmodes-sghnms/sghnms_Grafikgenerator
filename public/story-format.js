@@ -5,6 +5,7 @@ const STORY_WIDTH = 1122;
 const POST_HEIGHT = 1402;
 const STORY_HEIGHT = 1994;
 const STORY_Y_SCALE = STORY_HEIGHT / POST_HEIGHT;
+const OVERVIEW_HEADLINE_SCALE = 1.08;
 
 const OVERVIEW_GROUPS = [
   ".title-wrap",
@@ -74,7 +75,24 @@ function enlargeStoryHeadline(root) {
   const headline = root.querySelector(".title-wrap");
   if (!headline) return;
 
-  headline.style.transform = "scale(1.08)";
+  /*
+   * Der Story-Hintergrund wird von 1402 auf 1994px in der Hoehe skaliert.
+   * Nur den urspruenglichen top-Wert proportional zu verschieben reicht fuer
+   * die grosse Headline nicht: ihr optischer Mittelpunkt bleibt sonst zu weit
+   * oben und rutscht in die oberen Brushes. Wir verankern deshalb den
+   * Mittelpunkt der Post-Headline proportional im Story-Canvas und berechnen
+   * daraus die neue Oberkante.
+   */
+  const distributedTop = Number.parseFloat(headline.style.top);
+  const baseTop = Number.isFinite(distributedTop)
+    ? distributedTop / STORY_Y_SCALE
+    : 0;
+  const headlineHeight = headline.offsetHeight || 359;
+  const anchoredCenter = (baseTop + headlineHeight / 2) * STORY_Y_SCALE;
+  const storyTop = anchoredCenter - (headlineHeight * OVERVIEW_HEADLINE_SCALE) / 2;
+
+  headline.style.top = `${Math.round(storyTop)}px`;
+  headline.style.transform = `scale(${OVERVIEW_HEADLINE_SCALE})`;
   headline.style.transformOrigin = "center top";
 }
 
