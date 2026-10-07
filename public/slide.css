@@ -85,6 +85,14 @@
   pointer-events: none;
 }
 
+/* Story: headline bewusst tiefer als im Beitrag, damit sie nicht in die
+ * oberen Brushes rutscht. Die Story-Klasse wird vom Story-Renderer gesetzt. */
+.format-story .title-wrap {
+  top: 78px;
+  transform: scale(1.08);
+  transform-origin: center top;
+}
+
 .slide-title-image {
   display: block;
   width: auto;
