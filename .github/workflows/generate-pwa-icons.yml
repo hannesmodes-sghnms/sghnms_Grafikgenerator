@@ -1,0 +1,67 @@
+name: Generate PWA icons
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/generate-pwa-icons.yml"
+      - "public/assets/club-logos/overrides/1yrb3n9.png"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pwa-icons
+  cancel-in-progress: true
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install ImageMagick
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y imagemagick
+
+      - name: Generate app icons
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          SRC="public/assets/club-logos/overrides/1yrb3n9.png"
+          OUT="public/assets/app"
+          mkdir -p "$OUT"
+
+          create_icon() {
+            local size="$1"
+            local inner="$2"
+            local target="$3"
+
+            convert               -size "${size}x${size}"               xc:'#001f44'               \( "$SRC" -resize "${inner}x${inner}" \)               -gravity center               -composite               -alpha off               -depth 8               -colors 64               -strip               -define png:compression-level=9               "$OUT/$target"
+          }
+
+          create_icon 48 42 favicon-48.png
+          create_icon 180 158 apple-touch-icon.png
+          create_icon 192 168 icon-192.png
+          create_icon 512 450 icon-512.png
+          create_icon 512 360 icon-512-maskable.png
+
+      - name: Commit generated icons
+        run: |
+          if git diff --quiet -- public/assets/app && [ -z "$(git status --porcelain -- public/assets/app)" ]; then
+            echo "PWA icons are already up to date."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add public/assets/app
+          git commit -m "Generate PWA app icons"
+          git pull --rebase origin main
+          git push origin main
