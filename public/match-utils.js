@@ -18,6 +18,19 @@ export function slugify(value = "") {
     .replace(/^-+|-+$/g, "");
 }
 
+export function chunkMatches(matches = [], maxPerSlide = 5) {
+  const limit = Number(maxPerSlide);
+  if (!Number.isInteger(limit) || limit < 1) {
+    throw new TypeError("maxPerSlide must be a positive integer");
+  }
+
+  const chunks = [];
+  for (let index = 0; index < matches.length; index += limit) {
+    chunks.push(matches.slice(index, index + limit));
+  }
+  return chunks;
+}
+
 export function venueLabel(name) {
   const key = String(name || "").trim().toUpperCase();
   return VENUE_LABELS[key] || String(name || "").trim();
