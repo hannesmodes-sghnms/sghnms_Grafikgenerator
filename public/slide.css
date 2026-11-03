@@ -253,7 +253,8 @@
 }
 
 .match-card:not(.match-card--results) .center-box {
-  transform: translateY(10px);
+  /* Zweizeiligen Block aus Uhrzeit und UHR anhand der sichtbaren Glyphen zentrieren. */
+  transform: translateY(-4px);
 }
 
 /* Optischer Ausgleich der Fontmetriken: sichtbare Ziffernflaeche 3 px nach oben. */
