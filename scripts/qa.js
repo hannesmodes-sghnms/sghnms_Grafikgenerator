@@ -3,6 +3,8 @@ import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { CLUB_ID, TEAM_LABELS } from "../public/config.js";
+import { chunkMatches } from "../public/match-utils.js";
+import { buildSingleSlide } from "../public/single-match.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -76,6 +78,36 @@ async function main() {
     "public/single-match.js",
     "scripts/update-matches.js"
   ].forEach(checkSyntax);
+
+  const paginationProbe = chunkMatches(
+    Array.from({ length: 12 }, (_, index) => index + 1),
+    5
+  );
+  if (
+    paginationProbe.length !== 3 ||
+    paginationProbe.map((page) => page.length).join(",") !== "5,5,2" ||
+    paginationProbe.flat().join(",") !== "1,2,3,4,5,6,7,8,9,10,11,12"
+  ) {
+    error("Slide-Umbruch ist fehlerhaft: 12 Spiele muessen als 5,5,2 erhalten bleiben.");
+  }
+
+  const teamId = Object.keys(TEAM_LABELS)[0];
+  const singleSlideProbe = buildSingleSlide({
+    id: "qa-single-slide",
+    date: "2026-11-03",
+    time: "18:00",
+    competition: "QA Liga",
+    home: { id: teamId, clubId: CLUB_ID, name: "SG Handball Neumünster" },
+    away: { id: "qa-opponent", clubId: "qa", name: "QA Gegner" },
+    venue: { name: "KSV-HALLE" },
+    phase: { name: "QA" },
+    result: { home: null, away: null }
+  }, {
+    overrides: { sgName: "SG Handball Neumünster WJB" }
+  });
+  if (singleSlideProbe?.homeDisplayName !== "SG Handball Neumünster WJB") {
+    error("SG-Namens-Override wird auf Einzelspiel-Kacheln nicht angewendet.");
+  }
 
   const matchesPath = path.join(PUBLIC, "data", "matches.json");
   if (!(await exists(matchesPath))) {
