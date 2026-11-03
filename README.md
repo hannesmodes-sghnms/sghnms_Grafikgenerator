@@ -19,6 +19,8 @@ Der Generator unterstützt vier Modi:
 
 Die Ausgabe erfolgt im festen Format **1122 × 1402 px**. Der PNG-Export läuft vollständig clientseitig über `html2canvas`.
 
+Gruppierte Spieltag- und Ergebnis-Slides enthalten maximal **fünf Spiele pro Kachel**. Größere Tages-/Hallen-Gruppen werden automatisch auf fortlaufend benannte Kacheln verteilt; Reihenfolge und manuelle Match-Overrides bleiben dabei erhalten.
+
 ## Datenquelle
 
 Club-ID der SG Handball Neumünster:
@@ -129,6 +131,7 @@ Bei Einzelspiel-Slides gelten klarere Felder:
 - **SG-Team im Meta** – z. B. `WJE 2`
 - **Uhrzeit** oder bei Ergebnissen **Heim:Auswärts**
 - **Gegnername**
+- **SG-Name auf der Kachel** – z. B. `SG Handball Neumünster WJB`
 
 Beim Einzelergebnis wird der Score immer in visueller Reihenfolge **Heim:Auswärts** eingegeben, unabhängig davon, ob die SG Heim- oder Auswärtsteam ist.
 
