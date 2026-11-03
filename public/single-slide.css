@@ -182,7 +182,8 @@
   font-weight: 700;
   letter-spacing: -.035em;
   white-space: nowrap;
-  transform: translateY(10px);
+  /* Optischer Ausgleich der Fontmetriken: sichtbare Ziffernflaeche exakt zentrieren. */
+  transform: translateY(-4px);
 }
 
 .single-card__score-number:first-child {
