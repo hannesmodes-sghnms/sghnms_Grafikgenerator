@@ -5,6 +5,7 @@ import {
   slugify,
   venueLabel
 } from "./match-utils.js";
+import { BRAND } from "./config.js";
 
 function shortCompetition(value = "") {
   const name = String(value).trim();
@@ -231,12 +232,12 @@ export function buildSingleSlide(match, { overrides = {}, logoManifest = {}, res
 
   const teamLabel = overrides.teamLabel ?? perspective.teamLabel;
   const opponentName = overrides.opponent ?? perspective.opponent?.name ?? "";
+  const sgDisplayName = overrides.sgName ?? BRAND.clubName;
   const time = overrides.time ?? match.time;
   const venue = venueLabel(match.venue?.name).toUpperCase();
   const competition = shortCompetition(match.competition).toUpperCase();
   const phase = String(match.phase?.name || "").trim().toUpperCase();
   const metaParts = [competition, compactTeamLabel(teamLabel), phase].filter(Boolean);
-  const sgDisplayName = "SG HANDBALL NEUMÜNSTER";
   const homeDisplayName = perspective.isHome ? sgDisplayName : opponentName;
   const awayDisplayName = perspective.isHome ? opponentName : sgDisplayName;
   const rawOwnScore = perspective.isHome ? match.result?.home : match.result?.away;
@@ -255,6 +256,7 @@ export function buildSingleSlide(match, { overrides = {}, logoManifest = {}, res
     venue,
     time,
     teamLabel,
+    sgDisplayName,
     opponentName,
     homeDisplayName,
     awayDisplayName,

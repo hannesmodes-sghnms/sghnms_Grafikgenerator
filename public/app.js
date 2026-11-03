@@ -1,5 +1,6 @@
 import { BRAND } from "./config.js";
 import {
+  chunkMatches,
   escapeHtml,
   isFinishedMatch as isFinished,
   ownTeamPerspective as ownTeam,
@@ -26,6 +27,7 @@ const dataInfo = document.querySelector("#data-info");
 const slides = document.querySelector("#slides");
 
 const BASE_HREF = new URL("./", window.location.href).href;
+const MAX_MATCHES_PER_SLIDE = 5;
 
 const SPONSOR_ASSETS = Object.freeze({
   post: {
@@ -414,16 +416,34 @@ function buildSlides(matches, mode) {
     });
   }
 
-  return [...groups.values()]
+  const groupedSlides = [...groups.values()]
     .map((slide) => {
       slide.matches.sort((a, b) => a.time.localeCompare(b.time));
       return slide;
     })
-    .sort((a, b) => a.key.localeCompare(b.key))
+    .sort((a, b) => a.key.localeCompare(b.key));
+
+  return groupedSlides
+    .flatMap((slide) => {
+      const pages = chunkMatches(slide.matches, MAX_MATCHES_PER_SLIDE);
+      const pageCount = pages.length;
+
+      return pages.map((matchesOnPage, pageIndex) => ({
+        ...slide,
+        key: `${slide.key}:page:${String(pageIndex + 1).padStart(2, "0")}`,
+        matches: matchesOnPage,
+        pageIndex,
+        pageCount
+      }));
+    })
     .map((slide, index) => ({
       ...slide,
       index,
-      filename: `${slugify(slide.title)}-${slugify(slide.meta.join("-")) || index + 1}`
+      filename: [
+        slugify(slide.title),
+        slugify(slide.meta.join("-")) || index + 1,
+        slide.pageCount > 1 ? `kachel-${slide.pageIndex + 1}-von-${slide.pageCount}` : null
+      ].filter(Boolean).join("-")
     }));
 }
 
@@ -872,6 +892,7 @@ function renderOverrideRow(match, mode) {
 function renderSingleOverrideRow(rawMatch, perspective, resultMode) {
   const override = matchOverrides.get(String(rawMatch.id)) || {};
   const teamLabel = override.teamLabel ?? perspective.teamLabel;
+  const sgName = override.sgName ?? BRAND.clubName;
   const opponent = override.opponent ?? perspective.opponent?.name ?? "";
   const time = override.time ?? rawMatch.time;
   const ownScore = override.ownScore ?? perspective.ownScore;
@@ -934,6 +955,16 @@ function renderSingleOverrideRow(rawMatch, perspective, resultMode) {
         >
       </label>
 
+      <label>
+        <span>SG-Name auf der Kachel</span>
+        <input
+          type="text"
+          data-override-field="sgName"
+          value="${escapeHtml(sgName)}"
+          placeholder="${escapeHtml(BRAND.clubName)}"
+        >
+      </label>
+
       <button class="override-reset" type="button">Zurücksetzen</button>
     </div>
   `;
@@ -947,7 +978,7 @@ function slideCard(slide, mode) {
   article.innerHTML = `
     <div class="slide-card__header">
       <div>
-        <h2>${escapeHtml(slide.title)}</h2>
+        <h2>${escapeHtml(slide.title)}${slide.pageCount > 1 ? ` · ${slide.pageIndex + 1}/${slide.pageCount}` : ""}</h2>
         <p>${slide.meta.map(escapeHtml).join(" · ")}</p>
       </div>
       <div class="slide-card__actions">
@@ -1095,8 +1126,8 @@ function singleSlideCard(rawMatch, { resultMode = false } = {}) {
     <div class="override-panel" hidden>
       <div class="override-panel__hint">
         ${resultMode
-          ? "Ergebnis wird immer als Heim:Auswärts eingegeben. Namen und SG-Teambezeichnung können separat angepasst werden."
-          : "SG-Teambezeichnung im Meta-Block, Uhrzeit und Gegnername können für diesen Slide angepasst werden."}
+          ? "Ergebnis wird immer als Heim:Auswärts eingegeben. Beide Teamnamen und die SG-Teambezeichnung im Meta-Block können separat angepasst werden."
+          : "SG-Teambezeichnung im Meta-Block, Uhrzeit sowie beide Teamnamen auf der Kachel können angepasst werden."}
       </div>
       ${renderSingleOverrideRow(rawMatch, own, resultMode)}
     </div>
@@ -1157,11 +1188,13 @@ function singleSlideCard(rawMatch, { resultMode = false } = {}) {
     matchOverrides.delete(String(rawMatch.id));
     const row = resetButton.closest(".override-row");
     const teamInput = row.querySelector('[data-override-field="teamLabel"]');
+    const sgNameInput = row.querySelector('[data-override-field="sgName"]');
     const opponentInput = row.querySelector('[data-override-field="opponent"]');
     const timeInput = row.querySelector('[data-override-field="time"]');
     const scoreInput = row.querySelector('[data-override-field="singleScore"]');
 
     if (teamInput) teamInput.value = own.teamLabel;
+    if (sgNameInput) sgNameInput.value = BRAND.clubName;
     if (opponentInput) opponentInput.value = own.opponent?.name ?? "";
     if (timeInput) timeInput.value = rawMatch.time;
     if (scoreInput) {

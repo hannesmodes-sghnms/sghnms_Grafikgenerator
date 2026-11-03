@@ -256,11 +256,9 @@
   transform: translateY(10px);
 }
 
-/* Die Ziffern wirken durch die Font-Metrik optisch etwas zu hoch.
- * Ergebnis-Cards bekommen deshalb dieselbe optische Korrektur nach unten,
- * ohne die horizontale Zentrierung oder Spaltenbreite zu verändern. */
+/* Ergebnis ohne zusaetzlichen Vertikalversatz exakt in der Kartenmitte. */
 .match-card--results .center-box {
-  transform: translateY(10px);
+  transform: translateY(0);
 }
 
 .time {
