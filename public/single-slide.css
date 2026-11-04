@@ -182,6 +182,8 @@
   font-weight: 700;
   letter-spacing: -.035em;
   white-space: nowrap;
+  /* Sichtbare Bebas-Neue-Ziffernflaeche statt der Line-Box zentrieren. */
+  transform: translateY(13px);
 }
 
 .single-card__score-number:first-child {

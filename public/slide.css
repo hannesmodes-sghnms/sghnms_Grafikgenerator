@@ -252,6 +252,19 @@
   text-align: center;
 }
 
+/*
+ * Bebas Neue sitzt mit der sichtbaren Glyphenflaeche oberhalb der
+ * geometrisch zentrierten Line-Box. Die positiven Offsets zentrieren
+ * deshalb die sichtbaren Zeichen, nicht nur deren CSS-Boxen.
+ */
+.match-card:not(.match-card--results) .center-box {
+  transform: translateY(11px);
+}
+
+.match-card--results .center-box {
+  transform: translateY(13px);
+}
+
 .time {
   color: var(--copy-grey);
   font-size: 158px;
