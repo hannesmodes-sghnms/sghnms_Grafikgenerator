@@ -358,6 +358,11 @@ function bulkDownloadBar({ mode, format, from, to }) {
   return wrapper;
 }
 
+function overviewVenueLabel(name) {
+  const label = venueLabel(name);
+  return label === "PESTA" ? "PESTALOZZISCHULE" : label;
+}
+
 function buildSlides(matches, mode) {
   const relevant = matches
     .map((match) => ({ match, perspective: ownTeam(match) }))
@@ -372,7 +377,7 @@ function buildSlides(matches, mode) {
     let meta;
     let venue;
 
-    const shortVenue = venueLabel(match.venue?.name);
+    const shortVenue = overviewVenueLabel(match.venue?.name);
 
     if (mode === "results") {
       if (perspective.isHome) {
