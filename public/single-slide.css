@@ -165,6 +165,7 @@
   overflow-wrap: break-word;
   word-break: normal;
   hyphens: none;
+  transform: translateY(3px);
 }
 
 .single-card__score {
