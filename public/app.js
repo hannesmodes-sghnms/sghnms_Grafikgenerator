@@ -358,6 +358,11 @@ function bulkDownloadBar({ mode, format, from, to }) {
   return wrapper;
 }
 
+function overviewVenueLabel(name) {
+  const label = venueLabel(name);
+  return label === "PESTA" ? "PESTALOZZISCHULE" : label;
+}
+
 function buildSlides(matches, mode) {
   const relevant = matches
     .map((match) => ({ match, perspective: ownTeam(match) }))
@@ -370,13 +375,15 @@ function buildSlides(matches, mode) {
     let key;
     let title;
     let meta;
+    let venue;
 
-    const shortVenue = venueLabel(match.venue?.name);
+    const shortVenue = overviewVenueLabel(match.venue?.name);
 
     if (mode === "results") {
       if (perspective.isHome) {
         key = `results:home:${match.date}:${shortVenue}`;
-        meta = [match.weekday, match.dateText, shortVenue];
+        meta = [match.weekday, match.dateText];
+        venue = shortVenue;
       } else {
         key = `results:away:${match.date}`;
         meta = [match.weekday, match.dateText, "AUSWÄRTS"];
@@ -385,7 +392,8 @@ function buildSlides(matches, mode) {
     } else if (perspective.isHome) {
       key = `home:${match.date}:${shortVenue}`;
       title = BRAND.homeTitle;
-      meta = [match.weekday, match.dateText, shortVenue];
+      meta = [match.weekday, match.dateText];
+      venue = shortVenue;
     } else {
       key = `away:${match.date}`;
       title = BRAND.awayTitle;
@@ -397,6 +405,7 @@ function buildSlides(matches, mode) {
         key,
         title,
         meta,
+        venue,
         matches: []
       });
     }
@@ -441,14 +450,14 @@ function buildSlides(matches, mode) {
       index,
       filename: [
         slugify(slide.title),
-        slugify(slide.meta.join("-")) || index + 1,
+        slugify([...slide.meta, slide.venue].filter(Boolean).join("-")) || index + 1,
         slide.pageCount > 1 ? `kachel-${slide.pageIndex + 1}-von-${slide.pageCount}` : null
       ].filter(Boolean).join("-")
     }));
 }
 
-function renderMeta(meta) {
-  return meta
+function renderMeta(meta, venue = "") {
+  const primary = meta
     .filter(Boolean)
     .map((part, index, array) => {
       const dot = index < array.length - 1
@@ -458,6 +467,12 @@ function renderMeta(meta) {
       return `<span class="meta-part">${escapeHtml(String(part).toUpperCase())}</span>${dot}`;
     })
     .join("");
+
+  const venueLine = venue
+    ? `<div class="meta-venue">${escapeHtml(String(venue).toUpperCase())}</div>`
+    : "";
+
+  return `<div class="meta-primary">${primary}</div>${venueLine}`;
 }
 
 function headlineAssetForTitle(title = "") {
@@ -528,7 +543,7 @@ function renderSlideDocument(slide, mode) {
           ? `<img class="slide-title-image" src="${headlineAsset}" alt="${escapeHtml(slide.title)}">`
           : `<div class="slide-title-fallback">${escapeHtml(slide.title)}</div>`}
       </div>
-      <div class="meta-bar">${renderMeta(slide.meta)}</div>
+      <div class="meta-bar">${renderMeta(slide.meta, slide.venue)}</div>
       <div class="matches">${slide.matches.map((match) => renderMatchCard(match, mode)).join("")}</div>
     </div>
   </div>
@@ -979,7 +994,7 @@ function slideCard(slide, mode) {
     <div class="slide-card__header">
       <div>
         <h2>${escapeHtml(slide.title)}${slide.pageCount > 1 ? ` · ${slide.pageIndex + 1}/${slide.pageCount}` : ""}</h2>
-        <p>${slide.meta.map(escapeHtml).join(" · ")}</p>
+        <p>${[...slide.meta, slide.venue].filter(Boolean).map(escapeHtml).join(" · ")}</p>
       </div>
       <div class="slide-card__actions">
         <button class="override-toggle" type="button">Overrides bearbeiten</button>
