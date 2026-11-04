@@ -249,6 +249,7 @@
   line-height: 0.9;
   text-align: center;
   text-transform: uppercase;
+  transform: translateY(4px);
 }
 
 .team-label--long {
@@ -355,4 +356,5 @@
   overflow-wrap: break-word;
   white-space: normal;
   hyphens: none;
+  transform: translateY(4px);
 }
