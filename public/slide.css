@@ -252,16 +252,6 @@
   text-align: center;
 }
 
-.match-card:not(.match-card--results) .center-box {
-  /* Zweizeiligen Block aus Uhrzeit und UHR anhand der sichtbaren Glyphen zentrieren. */
-  transform: translateY(-4px);
-}
-
-/* Optischer Ausgleich der Fontmetriken: sichtbare Ziffernflaeche 3 px nach oben. */
-.match-card--results .center-box {
-  transform: translateY(-3px);
-}
-
 .time {
   color: var(--copy-grey);
   font-size: 158px;
