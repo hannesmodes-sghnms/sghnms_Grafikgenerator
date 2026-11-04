@@ -8,6 +8,8 @@ const ROOT = path.join(__dirname, "..");
 const PUBLIC_DIR = path.join(ROOT, "public");
 const DIST_DIR = path.join(ROOT, "dist");
 const MANIFEST_FILE = path.join(PUBLIC_DIR, "data", "club-logos.json");
+const SERVICE_WORKER_FILE = path.join(DIST_DIR, "sw.js");
+const BUILD_VERSION_MARKER = 'const BUILD_VERSION = "development";';
 
 async function exists(filePath) {
   try {
@@ -21,6 +23,28 @@ async function exists(filePath) {
 async function main() {
   await fs.rm(DIST_DIR, { recursive: true, force: true });
   await fs.cp(PUBLIC_DIR, DIST_DIR, { recursive: true });
+
+  const buildVersion = String(
+    process.env.GITHUB_SHA ||
+    process.env.SGHNMS_BUILD_VERSION ||
+    "local"
+  )
+    .trim()
+    .slice(0, 12) || "local";
+
+  const serviceWorkerSource = await fs.readFile(SERVICE_WORKER_FILE, "utf8");
+
+  if (!serviceWorkerSource.includes(BUILD_VERSION_MARKER)) {
+    throw new Error("Service-Worker Build-Version-Marker fehlt.");
+  }
+
+  await fs.writeFile(
+    SERVICE_WORKER_FILE,
+    serviceWorkerSource.replace(
+      BUILD_VERSION_MARKER,
+      `const BUILD_VERSION = ${JSON.stringify(buildVersion)};`
+    )
+  );
 
   // Raw-Logos sind Arbeits-/Fallback-Assets. Im Pages-Artefakt brauchen wir
   // nur Raw-Dateien, die das Manifest tatsaechlich als aktives Fallback nutzt.
