@@ -1,5 +1,6 @@
 const CACHE_PREFIX = "sghnms-generator-";
-const APP_CACHE = `${CACHE_PREFIX}app-v1`;
+const BUILD_VERSION = "development";
+const APP_CACHE = `${CACHE_PREFIX}app-${BUILD_VERSION}`;
 const DATA_CACHE = `${CACHE_PREFIX}data-v1`;
 
 const scopedUrl = (path) =>
