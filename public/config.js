@@ -43,6 +43,7 @@ export const TEAM_LABELS = Object.freeze({
 export const VENUE_LABELS = Object.freeze({
   "KSV-HALLE NMS": "KSV-HALLE",
   "KSV-HALLE": "KSV-HALLE",
+  "IGS-HALLE": "Gemeinschaftsschule Brachenfeld",
   "PESTALOZZI-SCHULE": "PESTA",
   "PESTALOZZI SCHULE": "PESTA"
 });
