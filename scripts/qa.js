@@ -3,7 +3,7 @@ import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { CLUB_ID, TEAM_LABELS } from "../public/config.js";
-import { chunkMatches } from "../public/match-utils.js";
+import { chunkMatches, venueLabel } from "../public/match-utils.js";
 import { buildSingleSlide } from "../public/single-match.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -89,6 +89,10 @@ async function main() {
     paginationProbe.flat().join(",") !== "1,2,3,4,5,6,7,8,9,10,11,12"
   ) {
     error("Slide-Umbruch ist fehlerhaft: 12 Spiele muessen als 5,5,2 erhalten bleiben.");
+  }
+
+  if (venueLabel("IGS-Halle") !== "Gemeinschaftsschule Brachenfeld") {
+    error("IGS-Halle wird nicht als Gemeinschaftsschule Brachenfeld ausgegeben.");
   }
 
   const teamId = Object.keys(TEAM_LABELS)[0];
