@@ -34,7 +34,6 @@ Das Inklusionsteam wird als separate Datenquelle geführt:
 
 ```text
 Team-ID:   97476
-Phase-ID:  16583
 Saison-ID: 2627
 ```
 
@@ -47,7 +46,7 @@ public/data/matches.json
 public/data/inclusion-matches.json
 ```
 
-Die Inklusionsspiele werden bewusst nicht in den regulären SG-Datensatz gemischt. Der Modus **Inklusionsturnier** gruppiert ausschließlich diese Daten nach Datum und Halle und nutzt die eigene Headline **TURNIER**.
+Die Inklusionsspiele werden bewusst nicht in den regulären SG-Datensatz gemischt. Sie werden saisonweit ausschließlich über die Team-ID und den Saisonzeitraum geladen, damit auch Turniere aus weiteren Phasen automatisch enthalten sind. Der Modus **Inklusionsturnier** gruppiert diese Daten nach Datum und Halle und nutzt die eigene Headline **TURNIER**.
 
 ## Deployment
 
