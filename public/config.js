@@ -1,7 +1,7 @@
 export const CLUB_ID = "1yrb3n9";
 export const HANDBALL_BASE = "https://www.handball.net";
 export const INCLUSION_TEAM_ID = "97476";
-export const INCLUSION_PHASE_ID = "16583";
+export const INCLUSION_TEAM_NAME = "SG Handiball/Handballsprotten";
 export const INCLUSION_SEASON_ID = "2627";
 
 export const BRAND = Object.freeze({
@@ -43,7 +43,7 @@ export const TEAM_LABELS = Object.freeze({
   "87107": "MJE 1",
   "87108": "MJE 2",
 
-  "97476": "INKLUSION"
+  [INCLUSION_TEAM_ID]: INCLUSION_TEAM_NAME
 });
 
 export const VENUE_LABELS = Object.freeze({
