@@ -12,10 +12,10 @@ https://hannesmodes-sghnms.github.io/sghnms_Grafikgenerator/
 
 Der Generator unterstützt fünf Modi:
 
-- **Spieltag** – gruppierte Heim- und Auswärtsspiel-Slides einschließlich der passenden Inklusionsturniere
-- **Inklusionsturnier** – eigenständiger Turnier-Slide für SG Handiball/Handballsprotten; alle Spiele eines Turniertags werden unabhängig von Heim-/Auswärtsstatus gemeinsam dargestellt
+- **Spieltag** – gruppierte Heim- und Auswärtsspiel-Slides einschließlich der passenden Inklusionsspieltage
+- **Inklusionsspieltag** – eigenständiger Spieltag-Slide für SG Handiball/Handballsprotten; alle Spiele eines Spieltags werden unabhängig von Heim-/Auswärtsstatus gemeinsam dargestellt
 - **Ergebnisse** – gruppierte Ergebnis-Slides für abgeschlossene Spiele
-- **Einzelspiel** – ein ausgewähltes Spiel oder ein kompletter Inklusionsturniertag; der Turnier-Slide ist identisch mit der Spieltagsansicht
+- **Einzelspiel** – ein ausgewähltes Spiel oder ein kompletter Inklusionsspieltag; der Spieltag-Slide ist identisch mit der Spieltagsansicht
 - **Einzelergebnis** – Einzelspiel-Ergebnis mit Heimteam links, Auswärtsteam rechts und Ergebnis in der Mitte
 
 Die Ausgabe erfolgt im festen Format **1122 × 1402 px**. Der PNG-Export läuft vollständig clientseitig über `html2canvas`.
@@ -46,7 +46,7 @@ public/data/matches.json
 public/data/inclusion-matches.json
 ```
 
-Die Inklusionsspiele werden bewusst nicht in den regulären SG-Datensatz gemischt. Sie werden saisonweit ausschließlich über die Team-ID und den Saisonzeitraum geladen, damit auch Turniere aus weiteren Phasen automatisch enthalten sind. Der Modus **Inklusionsturnier** gruppiert diese Daten nach Datum und Halle und nutzt die eigene Headline **TURNIER**.
+Die Inklusionsspiele werden bewusst nicht in den regulären SG-Datensatz gemischt. Sie werden saisonweit ausschließlich über die Team-ID und den Saisonzeitraum geladen, damit auch Spieltage aus weiteren Phasen automatisch enthalten sind. Der Modus **Inklusionsspieltag** gruppiert diese Daten nach Datum und Halle und nutzt die eigene Headline **SPIELTAG**.
 
 ## Deployment
 
