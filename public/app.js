@@ -426,7 +426,7 @@ function buildSlides(matches, mode) {
     if (mode === "inclusion") {
       key = `inclusion:${match.date}:${shortVenue}`;
       title = BRAND.tournamentTitle;
-      meta = [match.weekday, match.dateText];
+      meta = [match.weekday, match.dateText, BRAND.inclusionLeague];
       venue = shortVenue;
     } else if (mode === "results") {
       if (perspective.isHome) {
