@@ -1382,8 +1382,11 @@ form.addEventListener("submit", (event) => {
         slides.appendChild(slideCard(slide, "inclusion"));
       });
       slides.appendChild(sponsorSlideCard(format));
+      const tournamentSlideLabel = tournamentSlides.length === 1
+        ? "Turnier-Slide"
+        : "Turnier-Slides";
       setStatus(
-        `${tournamentSlides.length} Turnier-Slide(s) + Sponsoren-Slide erzeugt.`,
+        `${tournamentSlides.length} ${tournamentSlideLabel} + 1 Sponsoren-Slide erzeugt.`,
         "success"
       );
       return;
