@@ -10,9 +10,10 @@ https://hannesmodes-sghnms.github.io/sghnms_Grafikgenerator/
 
 ## Varianten
 
-Der Generator unterstützt vier Modi:
+Der Generator unterstützt fünf Modi:
 
 - **Spieltag** – gruppierte Heim- und Auswärtsspiel-Slides
+- **Inklusionsturnier** – eigenständiger Turnier-Slide für SG Handiball/Handballsprotten; alle Spiele eines Turniertags werden unabhängig von Heim-/Auswärtsstatus gemeinsam dargestellt
 - **Ergebnisse** – gruppierte Ergebnis-Slides für abgeschlossene Spiele
 - **Einzelspiel** – genau ein ausgewähltes Spiel mit Heimteam links und Auswärtsteam rechts
 - **Einzelergebnis** – Einzelspiel-Ergebnis mit Heimteam links, Auswärtsteam rechts und Ergebnis in der Mitte
@@ -29,15 +30,24 @@ Club-ID der SG Handball Neumünster:
 1yrb3n9
 ```
 
+Das Inklusionsteam wird als separate Datenquelle geführt:
+
+```text
+Team-ID:   97476
+Phase-ID:  16583
+Saison-ID: 2627
+```
+
 `scripts/update-matches.js` liest den aktuellen `client-token` aus der öffentlichen handball.net Club-Seite und ruft anschließend die Match-API ab. Datum und Uhrzeit werden bewusst als lokale handball.net Wall-Clock-Zeit verarbeitet, damit keine Sommerzeitverschiebung entsteht.
 
-Die normalisierten Daten werden nach
+Die normalisierten Daten werden in folgende Dateien geschrieben:
 
 ```text
 public/data/matches.json
+public/data/inclusion-matches.json
 ```
 
-geschrieben.
+Die Inklusionsspiele werden bewusst nicht in den regulären SG-Datensatz gemischt. Der Modus **Inklusionsturnier** gruppiert ausschließlich diese Daten nach Datum und Halle und nutzt die eigene Headline **TURNIER**.
 
 ## Deployment
 
