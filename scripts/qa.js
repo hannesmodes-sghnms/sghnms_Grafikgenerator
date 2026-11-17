@@ -4,6 +4,7 @@ import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import {
   CLUB_ID,
+  INCLUSION_TEAM_NAME,
   INCLUSION_TEAM_ID,
   TEAM_LABELS
 } from "../public/config.js";
@@ -111,8 +112,8 @@ async function main() {
     result: { home: null, away: null }
   });
 
-  if (inclusionPerspective?.teamLabel !== "INKLUSION") {
-    error("Das Inklusionsteam wird nicht als eigenes SG-Team erkannt.");
+  if (inclusionPerspective?.teamLabel !== INCLUSION_TEAM_NAME) {
+    error("Das Inklusionsteam wird nicht mit seinem vollstaendigen Namen erkannt.");
   }
 
   const teamId = Object.keys(TEAM_LABELS)[0];
