@@ -9,7 +9,8 @@ export const BRAND = Object.freeze({
   homeTitle: "HEIMSPIELE",
   awayTitle: "AUSWÄRTSSPIELE",
   resultsTitle: "ERGEBNISSE",
-  tournamentTitle: "TURNIER"
+  tournamentTitle: "TURNIER",
+  inclusionLeague: "Inklusionsliga"
 });
 
 export const TEAM_LABELS = Object.freeze({
