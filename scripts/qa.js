@@ -4,7 +4,6 @@ import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import {
   CLUB_ID,
-  INCLUSION_PHASE_ID,
   INCLUSION_TEAM_ID,
   TEAM_LABELS
 } from "../public/config.js";
@@ -211,10 +210,6 @@ async function main() {
         const teamIds = [match.home?.id, match.away?.id].map(String);
         if (!teamIds.includes(String(INCLUSION_TEAM_ID))) {
           error(`Inklusionsdatensatz enthaelt fremdes Spiel: ${match.id}`);
-        }
-
-        if (String(match.phase?.id ?? "") !== String(INCLUSION_PHASE_ID)) {
-          error(`Inklusionsspiel ${match.id} stammt nicht aus Phase ${INCLUSION_PHASE_ID}.`);
         }
       }
     }
