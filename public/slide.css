@@ -108,7 +108,7 @@
 .slide-title-image[src$="headline-results.svg"] { transform: translateY(-2px); }
 .slide-title-image[src$="headline-tournament.svg"] {
   width: 720px;
-  transform: translateY(18px);
+  transform: translateY(92px);
 }
 
 .slide-title-fallback {
