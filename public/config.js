@@ -1,7 +1,6 @@
 export const CLUB_ID = "1yrb3n9";
 export const HANDBALL_BASE = "https://www.handball.net";
 export const INCLUSION_TEAM_ID = "97476";
-export const INCLUSION_PHASE_ID = "16583";
 export const INCLUSION_SEASON_ID = "2627";
 
 export const BRAND = Object.freeze({
