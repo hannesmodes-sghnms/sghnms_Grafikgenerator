@@ -12,10 +12,10 @@ https://hannesmodes-sghnms.github.io/sghnms_Grafikgenerator/
 
 Der Generator unterstützt fünf Modi:
 
-- **Spieltag** – gruppierte Heim- und Auswärtsspiel-Slides
+- **Spieltag** – gruppierte Heim- und Auswärtsspiel-Slides einschließlich der passenden Inklusionsturniere
 - **Inklusionsturnier** – eigenständiger Turnier-Slide für SG Handiball/Handballsprotten; alle Spiele eines Turniertags werden unabhängig von Heim-/Auswärtsstatus gemeinsam dargestellt
 - **Ergebnisse** – gruppierte Ergebnis-Slides für abgeschlossene Spiele
-- **Einzelspiel** – genau ein ausgewähltes Spiel mit Heimteam links und Auswärtsteam rechts
+- **Einzelspiel** – ein ausgewähltes Spiel oder ein kompletter Inklusionsturniertag; der Turnier-Slide ist identisch mit der Spieltagsansicht
 - **Einzelergebnis** – Einzelspiel-Ergebnis mit Heimteam links, Auswärtsteam rechts und Ergebnis in der Mitte
 
 Die Ausgabe erfolgt im festen Format **1122 × 1402 px**. Der PNG-Export läuft vollständig clientseitig über `html2canvas`.
