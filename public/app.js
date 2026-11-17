@@ -426,7 +426,7 @@ function buildSlides(matches, mode) {
     if (mode === "inclusion") {
       key = `inclusion:${match.date}:${shortVenue}`;
       title = BRAND.tournamentTitle;
-      meta = [match.weekday, match.dateText];
+      meta = [match.weekday, match.dateText, BRAND.inclusionLeague];
       venue = shortVenue;
     } else if (mode === "results") {
       if (perspective.isHome) {
@@ -552,6 +552,14 @@ function renderMatchCard(match, mode) {
     teamLabelClasses.push("team-label--long");
   }
 
+  if (mode === "inclusion") {
+    teamLabelClasses.push("team-label--inclusion");
+  }
+
+  const renderedTeamLabel = mode === "inclusion"
+    ? escapeHtml(match.teamLabel).replace("/", "/<br>")
+    : escapeHtml(match.teamLabel);
+
   return `
     <div class="match-card-shell">
       <div class="match-card ${mode === "results" ? "match-card--results" : ""}">
@@ -559,7 +567,7 @@ function renderMatchCard(match, mode) {
         <div class="match-card-rail">
           <div class="team-box">
             <img class="team-shape" src="assets/canva/team-tag.png" alt="" aria-hidden="true">
-            <div class="${teamLabelClasses.join(" ")}">${escapeHtml(match.teamLabel)}</div>
+            <div class="${teamLabelClasses.join(" ")}">${renderedTeamLabel}</div>
           </div>
           <div class="center-box">${center}</div>
           <div class="vs-box" aria-hidden="true">
@@ -643,19 +651,22 @@ function renderSlideDocument(slide, mode) {
         document.querySelectorAll(".fit-text--team").forEach((element) => {
           const rawText = (element.textContent || "").replace(/\\s+/g, " ").trim();
           const isLongLabel = rawText.length > 5;
+          const isInclusionLabel = element.classList.contains("team-label--inclusion");
 
           element.style.removeProperty("font-size");
           element.style.removeProperty("line-height");
 
           const computed = window.getComputedStyle(element);
           const cssBaseSize = parseFloat(computed.fontSize) || 77.48;
-          const targetBaseSize = isLongLabel
-            ? Math.min(cssBaseSize, 63)
-            : cssBaseSize;
+          const targetBaseSize = isInclusionLabel
+            ? Math.min(cssBaseSize, 32)
+            : isLongLabel
+              ? Math.min(cssBaseSize, 63)
+              : cssBaseSize;
 
           element.dataset.baseSize = String(targetBaseSize);
           shrinkToFit(element, {
-            minSize: isLongLabel ? 40 : 52,
+            minSize: isInclusionLabel ? 26 : isLongLabel ? 40 : 52,
             step: 1
           });
         });
