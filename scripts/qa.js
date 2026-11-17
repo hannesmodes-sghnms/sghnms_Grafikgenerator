@@ -70,7 +70,7 @@ async function main() {
     "public/assets/headlines/headline-home.svg",
     "public/assets/headlines/headline-away.svg",
     "public/assets/headlines/headline-results.svg",
-    "public/assets/headlines/headline-tournament.svg",
+    "public/assets/headlines/headline-inclusion-gameday.svg",
     "public/assets/headlines/heimspiel.png",
     "public/assets/headlines/auswaerts.png",
     "public/assets/headlines/ergebnis.png"
