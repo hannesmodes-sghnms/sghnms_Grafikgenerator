@@ -43,6 +43,7 @@ const SPONSOR_ASSETS = Object.freeze({
 });
 
 let dataSet = null;
+let inclusionDataSet = null;
 let logoManifest = { generatedAt: null, clubs: {}, teams: {} };
 const matchOverrides = new Map();
 
@@ -326,7 +327,11 @@ async function downloadAllSlides(button, { mode, format, from, to }) {
 
     button.textContent = "ZIP wird erstellt …";
     const zip = await createZipBlob(files);
-    const modeLabel = mode === "results" ? "ergebnisse" : "spieltag";
+    const modeLabel = mode === "results"
+      ? "ergebnisse"
+      : mode === "inclusion"
+        ? "inklusionsturnier"
+        : "spieltag";
     const zipFilename = `sghnms-${modeLabel}-${from}-bis-${to}-${format}.zip`;
     triggerBlobDownload(zip, zipFilename);
     setStatus(`${files.length} Dateien als ${zipFilename} heruntergeladen.`, "success");
@@ -379,7 +384,12 @@ function buildSlides(matches, mode) {
 
     const shortVenue = overviewVenueLabel(match.venue?.name);
 
-    if (mode === "results") {
+    if (mode === "inclusion") {
+      key = `inclusion:${match.date}:${shortVenue}`;
+      title = BRAND.tournamentTitle;
+      meta = [match.weekday, match.dateText];
+      venue = shortVenue;
+    } else if (mode === "results") {
       if (perspective.isHome) {
         key = `results:home:${match.date}:${shortVenue}`;
         meta = [match.weekday, match.dateText];
@@ -481,7 +491,8 @@ function headlineAssetForTitle(title = "") {
   const assets = {
     HEIMSPIELE: "assets/headlines/headline-home.svg",
     "AUSWÄRTSSPIELE": "assets/headlines/headline-away.svg",
-    ERGEBNISSE: "assets/headlines/headline-results.svg"
+    ERGEBNISSE: "assets/headlines/headline-results.svg",
+    TURNIER: "assets/headlines/headline-tournament.svg"
   };
 
   return assets[normalized] ?? null;
@@ -1236,21 +1247,26 @@ async function loadData() {
   submitButton.disabled = true;
   setStatus("Spieldaten werden geladen …", "loading");
 
-  const response = await fetch("./data/matches.json", {
-    cache: "no-store"
-  });
+  const loadMatchData = async (path, label) => {
+    const response = await fetch(path, { cache: "no-store" });
 
-  if (!response.ok) {
-    throw new Error(`Spieldaten konnten nicht geladen werden (HTTP ${response.status}).`);
-  }
+    if (!response.ok) {
+      throw new Error(`${label} konnten nicht geladen werden (HTTP ${response.status}).`);
+    }
 
-  const data = await response.json();
+    const data = await response.json();
 
-  if (!Array.isArray(data.matches)) {
-    throw new Error("Ungültiges Datenformat in matches.json.");
-  }
+    if (!Array.isArray(data.matches)) {
+      throw new Error(`Ungültiges Datenformat in ${path}.`);
+    }
 
-  dataSet = data;
+    return data;
+  };
+
+  [dataSet, inclusionDataSet] = await Promise.all([
+    loadMatchData("./data/matches.json", "Spieldaten"),
+    loadMatchData("./data/inclusion-matches.json", "Inklusionsdaten")
+  ]);
 
   try {
     const logoResponse = await fetch("./data/club-logos.json", { cache: "no-store" });
@@ -1265,18 +1281,18 @@ async function loadData() {
   submitButton.disabled = false;
   refreshSingleMatchOptions();
 
-  const generatedAt = data.generatedAt
+  const generatedAt = dataSet.generatedAt
     ? new Intl.DateTimeFormat("de-DE", {
         dateStyle: "medium",
         timeStyle: "short"
-      }).format(new Date(data.generatedAt))
+      }).format(new Date(dataSet.generatedAt))
     : "noch nicht aktualisiert";
 
-  const seasonText = data.season?.dateFrom && data.season?.dateTo
-    ? `${data.season.dateFrom} bis ${data.season.dateTo}`
+  const seasonText = dataSet.season?.dateFrom && dataSet.season?.dateTo
+    ? `${dataSet.season.dateFrom} bis ${dataSet.season.dateTo}`
     : "keine Saisondaten";
 
-  dataInfo.textContent = `Datenstand: ${generatedAt} · ${data.matches.length} Spiele · Saison: ${seasonText}`;
+  dataInfo.textContent = `Datenstand: ${generatedAt} · ${dataSet.matches.length} SG-Spiele · ${inclusionDataSet.matches.length} Inklusionsspiele · Saison: ${seasonText}`;
   setStatus("Zeitraum auswählen und Slides generieren.");
 }
 
@@ -1298,7 +1314,11 @@ form.addEventListener("submit", (event) => {
     return;
   }
 
-  const filteredMatches = dataSet.matches.filter((match) =>
+  const sourceMatches = mode === "inclusion"
+    ? inclusionDataSet?.matches || []
+    : dataSet.matches;
+
+  const filteredMatches = sourceMatches.filter((match) =>
     match.date >= from && match.date <= to
   );
 
