@@ -106,6 +106,7 @@
 .slide-title-image[src$="headline-away.svg"] { transform: translateY(20px); }
 .slide-title-image[src$="headline-home.svg"] { transform: translateY(4px); }
 .slide-title-image[src$="headline-results.svg"] { transform: translateY(-2px); }
+.slide-title-image[src$="headline-tournament.svg"] { transform: translateY(4px); }
 
 .slide-title-fallback {
   margin-top: 96px;

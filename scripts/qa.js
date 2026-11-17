@@ -2,8 +2,16 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
-import { CLUB_ID, TEAM_LABELS } from "../public/config.js";
-import { chunkMatches, venueLabel } from "../public/match-utils.js";
+import {
+  CLUB_ID,
+  INCLUSION_TEAM_ID,
+  TEAM_LABELS
+} from "../public/config.js";
+import {
+  chunkMatches,
+  ownTeamPerspective,
+  venueLabel
+} from "../public/match-utils.js";
 import { buildSingleSlide } from "../public/single-match.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -54,12 +62,14 @@ async function main() {
     "public/slide-base.css",
     "public/slide.css",
     "public/single-slide.css",
+    "public/data/inclusion-matches.json",
     "public/assets/fonts/BebasNeue-Bold.ttf",
     "public/assets/sghnms_images/sghnms_bg.png",
     "public/assets/canva/slide-bg.png",
     "public/assets/headlines/headline-home.svg",
     "public/assets/headlines/headline-away.svg",
     "public/assets/headlines/headline-results.svg",
+    "public/assets/headlines/headline-tournament.svg",
     "public/assets/headlines/heimspiel.png",
     "public/assets/headlines/auswaerts.png",
     "public/assets/headlines/ergebnis.png"
@@ -93,6 +103,16 @@ async function main() {
 
   if (venueLabel("IGS-Halle") !== "Gemeinschaftsschule Brachenfeld") {
     error("IGS-Halle wird nicht als Gemeinschaftsschule Brachenfeld ausgegeben.");
+  }
+
+  const inclusionPerspective = ownTeamPerspective({
+    home: { id: INCLUSION_TEAM_ID, name: "SG Handiball/Handballsprotten" },
+    away: { id: "qa-opponent", name: "QA Gegner" },
+    result: { home: null, away: null }
+  });
+
+  if (inclusionPerspective?.teamLabel !== "INKLUSION") {
+    error("Das Inklusionsteam wird nicht als eigenes SG-Team erkannt.");
   }
 
   const teamId = Object.keys(TEAM_LABELS)[0];
@@ -168,6 +188,28 @@ async function main() {
 
         for (const [key, name] of missingLogoKeys) {
           warn(`Kein Logo-Asset fuer ${name} (${key}); Platzhalter wird verwendet.`);
+        }
+      }
+    }
+  }
+
+  const inclusionMatchesPath = path.join(PUBLIC, "data", "inclusion-matches.json");
+  if (!(await exists(inclusionMatchesPath))) {
+    error("public/data/inclusion-matches.json fehlt.");
+  } else {
+    const inclusionPayload = await readJson(inclusionMatchesPath);
+
+    if (!Array.isArray(inclusionPayload.matches)) {
+      error("inclusion-matches.json enthaelt kein matches-Array.");
+    } else if (!inclusionPayload.matches.length) {
+      const message = "inclusion-matches.json enthaelt keine Spiele. Vor QA `npm run update:data` ausfuehren.";
+      if (deployMode) error(message);
+      else warn(message);
+    } else {
+      for (const match of inclusionPayload.matches) {
+        const teamIds = [match.home?.id, match.away?.id].map(String);
+        if (!teamIds.includes(String(INCLUSION_TEAM_ID))) {
+          error(`Inklusionsdatensatz enthaelt fremdes Spiel: ${match.id}`);
         }
       }
     }

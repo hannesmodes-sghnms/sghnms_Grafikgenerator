@@ -1,11 +1,14 @@
 export const CLUB_ID = "1yrb3n9";
 export const HANDBALL_BASE = "https://www.handball.net";
+export const INCLUSION_TEAM_ID = "97476";
+export const INCLUSION_SEASON_ID = "2627";
 
 export const BRAND = Object.freeze({
   clubName: "SG Handball Neumünster",
   homeTitle: "HEIMSPIELE",
   awayTitle: "AUSWÄRTSSPIELE",
-  resultsTitle: "ERGEBNISSE"
+  resultsTitle: "ERGEBNISSE",
+  tournamentTitle: "TURNIER"
 });
 
 export const TEAM_LABELS = Object.freeze({
@@ -37,7 +40,9 @@ export const TEAM_LABELS = Object.freeze({
   "87109": "WJE 1",
   "87110": "WJE 2",
   "87107": "MJE 1",
-  "87108": "MJE 2"
+  "87108": "MJE 2",
+
+  "97476": "INKLUSION"
 });
 
 export const VENUE_LABELS = Object.freeze({

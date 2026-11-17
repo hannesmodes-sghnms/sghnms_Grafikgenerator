@@ -20,6 +20,7 @@ const fromInput = document.querySelector("#from");
 const toInput = document.querySelector("#to");
 const modeInput = document.querySelector("#mode");
 const singleMatchField = document.querySelector("#single-match-field");
+const singleMatchLabel = singleMatchField.querySelector("span");
 const singleMatchInput = document.querySelector("#single-match");
 const submitButton = form.querySelector('button[type="submit"]');
 const status = document.querySelector("#status");
@@ -43,8 +44,10 @@ const SPONSOR_ASSETS = Object.freeze({
 });
 
 let dataSet = null;
+let inclusionDataSet = null;
 let logoManifest = { generatedAt: null, clubs: {}, teams: {} };
 const matchOverrides = new Map();
+const TOURNAMENT_OPTION_PREFIX = "tournament:";
 
 function isoDate(date) {
   const year = date.getFullYear();
@@ -66,6 +69,9 @@ function refreshSingleMatchOptions() {
   const isSingleResult = modeInput.value === "single-result";
   singleMatchField.hidden = !isSingle;
   form.classList.toggle("controls--single", isSingle);
+  singleMatchLabel.textContent = isSingleResult
+    ? "Spiel auswählen"
+    : "Spiel oder Turnier auswählen";
 
   if (!isSingle || !dataSet?.matches) return;
 
@@ -73,19 +79,30 @@ function refreshSingleMatchOptions() {
   const to = toInput.value;
   const currentValue = singleMatchInput.value;
 
-  const options = dataSet.matches
+  const matchOptions = dataSet.matches
     .filter((match) => (!from || match.date >= from) && (!to || match.date <= to))
     .filter((match) => !isSingleResult || isFinished(match))
-    .map((match) => ({ match, label: singleMatchOptionLabel(match) }))
+    .map((match) => ({
+      value: String(match.id),
+      label: singleMatchOptionLabel(match),
+      sortKey: `${match.date}:${match.time}:${match.id}`
+    }))
     .filter((item) => item.label);
 
+  const tournamentOptions = isSingleResult
+    ? []
+    : buildTournamentChoices(matchesInRange(inclusionDataSet?.matches, from, to));
+
+  const options = [...matchOptions, ...tournamentOptions]
+    .sort((a, b) => a.sortKey.localeCompare(b.sortKey));
+
   singleMatchInput.innerHTML = options.length
-    ? options.map(({ match, label }) =>
-        `<option value="${escapeHtml(match.id)}">${escapeHtml(label)}</option>`
+    ? options.map(({ value, label }) =>
+        `<option value="${escapeHtml(value)}">${escapeHtml(label)}</option>`
       ).join("")
     : '<option value="">Keine passenden Spiele im Zeitraum</option>';
 
-  if (options.some(({ match }) => String(match.id) === currentValue)) {
+  if (options.some(({ value }) => value === currentValue)) {
     singleMatchInput.value = currentValue;
   }
 }
@@ -326,7 +343,11 @@ async function downloadAllSlides(button, { mode, format, from, to }) {
 
     button.textContent = "ZIP wird erstellt …";
     const zip = await createZipBlob(files);
-    const modeLabel = mode === "results" ? "ergebnisse" : "spieltag";
+    const modeLabel = mode === "results"
+      ? "ergebnisse"
+      : mode === "inclusion"
+        ? "inklusionsturnier"
+        : "spieltag";
     const zipFilename = `sghnms-${modeLabel}-${from}-bis-${to}-${format}.zip`;
     triggerBlobDownload(zip, zipFilename);
     setStatus(`${files.length} Dateien als ${zipFilename} heruntergeladen.`, "success");
@@ -363,6 +384,29 @@ function overviewVenueLabel(name) {
   return label === "PESTA" ? "PESTALOZZISCHULE" : label;
 }
 
+function matchesInRange(matches = [], from = "", to = "") {
+  return matches.filter((match) =>
+    (!from || match.date >= from) && (!to || match.date <= to)
+  );
+}
+
+function buildTournamentChoices(matches = []) {
+  const choices = new Map();
+
+  for (const slide of buildSlides(matches, "inclusion")) {
+    if (choices.has(slide.groupKey)) continue;
+
+    const dateText = slide.meta?.[1] || slide.date;
+    choices.set(slide.groupKey, {
+      value: `${TOURNAMENT_OPTION_PREFIX}${slide.groupKey}`,
+      label: `${dateText} · TURNIER · ${slide.venue}`,
+      sortKey: `${slide.date}:00:00:${slide.groupKey}`
+    });
+  }
+
+  return [...choices.values()];
+}
+
 function buildSlides(matches, mode) {
   const relevant = matches
     .map((match) => ({ match, perspective: ownTeam(match) }))
@@ -379,7 +423,12 @@ function buildSlides(matches, mode) {
 
     const shortVenue = overviewVenueLabel(match.venue?.name);
 
-    if (mode === "results") {
+    if (mode === "inclusion") {
+      key = `inclusion:${match.date}:${shortVenue}`;
+      title = BRAND.tournamentTitle;
+      meta = [match.weekday, match.dateText];
+      venue = shortVenue;
+    } else if (mode === "results") {
       if (perspective.isHome) {
         key = `results:home:${match.date}:${shortVenue}`;
         meta = [match.weekday, match.dateText];
@@ -403,6 +452,7 @@ function buildSlides(matches, mode) {
     if (!groups.has(key)) {
       groups.set(key, {
         key,
+        date: match.date,
         title,
         meta,
         venue,
@@ -439,6 +489,7 @@ function buildSlides(matches, mode) {
 
       return pages.map((matchesOnPage, pageIndex) => ({
         ...slide,
+        groupKey: slide.key,
         key: `${slide.key}:page:${String(pageIndex + 1).padStart(2, "0")}`,
         matches: matchesOnPage,
         pageIndex,
@@ -481,7 +532,8 @@ function headlineAssetForTitle(title = "") {
   const assets = {
     HEIMSPIELE: "assets/headlines/headline-home.svg",
     "AUSWÄRTSSPIELE": "assets/headlines/headline-away.svg",
-    ERGEBNISSE: "assets/headlines/headline-results.svg"
+    ERGEBNISSE: "assets/headlines/headline-results.svg",
+    TURNIER: "assets/headlines/headline-tournament.svg"
   };
 
   return assets[normalized] ?? null;
@@ -1236,21 +1288,26 @@ async function loadData() {
   submitButton.disabled = true;
   setStatus("Spieldaten werden geladen …", "loading");
 
-  const response = await fetch("./data/matches.json", {
-    cache: "no-store"
-  });
+  const loadMatchData = async (path, label) => {
+    const response = await fetch(path, { cache: "no-store" });
 
-  if (!response.ok) {
-    throw new Error(`Spieldaten konnten nicht geladen werden (HTTP ${response.status}).`);
-  }
+    if (!response.ok) {
+      throw new Error(`${label} konnten nicht geladen werden (HTTP ${response.status}).`);
+    }
 
-  const data = await response.json();
+    const data = await response.json();
 
-  if (!Array.isArray(data.matches)) {
-    throw new Error("Ungültiges Datenformat in matches.json.");
-  }
+    if (!Array.isArray(data.matches)) {
+      throw new Error(`Ungültiges Datenformat in ${path}.`);
+    }
 
-  dataSet = data;
+    return data;
+  };
+
+  [dataSet, inclusionDataSet] = await Promise.all([
+    loadMatchData("./data/matches.json", "Spieldaten"),
+    loadMatchData("./data/inclusion-matches.json", "Inklusionsdaten")
+  ]);
 
   try {
     const logoResponse = await fetch("./data/club-logos.json", { cache: "no-store" });
@@ -1265,18 +1322,18 @@ async function loadData() {
   submitButton.disabled = false;
   refreshSingleMatchOptions();
 
-  const generatedAt = data.generatedAt
+  const generatedAt = dataSet.generatedAt
     ? new Intl.DateTimeFormat("de-DE", {
         dateStyle: "medium",
         timeStyle: "short"
-      }).format(new Date(data.generatedAt))
+      }).format(new Date(dataSet.generatedAt))
     : "noch nicht aktualisiert";
 
-  const seasonText = data.season?.dateFrom && data.season?.dateTo
-    ? `${data.season.dateFrom} bis ${data.season.dateTo}`
+  const seasonText = dataSet.season?.dateFrom && dataSet.season?.dateTo
+    ? `${dataSet.season.dateFrom} bis ${dataSet.season.dateTo}`
     : "keine Saisondaten";
 
-  dataInfo.textContent = `Datenstand: ${generatedAt} · ${data.matches.length} Spiele · Saison: ${seasonText}`;
+  dataInfo.textContent = `Datenstand: ${generatedAt} · ${dataSet.matches.length} SG-Spiele · ${inclusionDataSet.matches.length} Inklusionsspiele · Saison: ${seasonText}`;
   setStatus("Zeitraum auswählen und Slides generieren.");
 }
 
@@ -1298,16 +1355,45 @@ form.addEventListener("submit", (event) => {
     return;
   }
 
-  const filteredMatches = dataSet.matches.filter((match) =>
-    match.date >= from && match.date <= to
+  const filteredMatches = matchesInRange(dataSet.matches, from, to);
+  const filteredInclusionMatches = matchesInRange(
+    inclusionDataSet?.matches,
+    from,
+    to
   );
 
   slides.innerHTML = "";
 
   if (mode === "single" || mode === "single-result") {
     const resultMode = mode === "single-result";
+    const selectedValue = singleMatchInput.value;
+
+    if (!resultMode && selectedValue.startsWith(TOURNAMENT_OPTION_PREFIX)) {
+      const groupKey = selectedValue.slice(TOURNAMENT_OPTION_PREFIX.length);
+      const tournamentSlides = buildSlides(filteredInclusionMatches, "inclusion")
+        .filter((slide) => slide.groupKey === groupKey);
+
+      if (!tournamentSlides.length) {
+        setStatus("Bitte ein gültiges Inklusionsturnier auswählen.", "empty");
+        return;
+      }
+
+      tournamentSlides.forEach((slide) => {
+        slides.appendChild(slideCard(slide, "inclusion"));
+      });
+      slides.appendChild(sponsorSlideCard(format));
+      const tournamentSlideLabel = tournamentSlides.length === 1
+        ? "Turnier-Slide"
+        : "Turnier-Slides";
+      setStatus(
+        `${tournamentSlides.length} ${tournamentSlideLabel} + 1 Sponsoren-Slide erzeugt.`,
+        "success"
+      );
+      return;
+    }
+
     const selected = filteredMatches.find(
-      (match) => String(match.id) === String(singleMatchInput.value)
+      (match) => String(match.id) === selectedValue
     );
 
     if (!selected || !ownTeam(selected)) {
@@ -1331,7 +1417,18 @@ form.addEventListener("submit", (event) => {
     return;
   }
 
-  const generatedSlides = buildSlides(filteredMatches, mode);
+  const regularSlides = mode === "inclusion"
+    ? []
+    : buildSlides(filteredMatches, mode);
+  const tournamentSlides = mode === "gameday" || mode === "inclusion"
+    ? buildSlides(filteredInclusionMatches, "inclusion")
+    : [];
+  const generatedSlides = [
+    ...regularSlides.map((slide) => ({ slide, renderMode: mode })),
+    ...tournamentSlides.map((slide) => ({ slide, renderMode: "inclusion" }))
+  ].sort((a, b) =>
+    a.slide.date.localeCompare(b.slide.date) || a.slide.key.localeCompare(b.slide.key)
+  );
 
   if (!generatedSlides.length) {
     setStatus("Für den Zeitraum wurden keine passenden Slides gefunden.", "empty");
@@ -1340,8 +1437,8 @@ form.addEventListener("submit", (event) => {
 
   slides.appendChild(bulkDownloadBar({ mode, format, from, to }));
 
-  generatedSlides.forEach((slide) => {
-    slides.appendChild(slideCard(slide, mode));
+  generatedSlides.forEach(({ slide, renderMode }) => {
+    slides.appendChild(slideCard(slide, renderMode));
   });
 
   slides.appendChild(sponsorSlideCard(format));
