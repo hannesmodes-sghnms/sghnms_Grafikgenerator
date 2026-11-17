@@ -4,7 +4,6 @@ import { fileURLToPath } from "node:url";
 import {
   CLUB_ID,
   HANDBALL_BASE,
-  INCLUSION_PHASE_ID,
   INCLUSION_SEASON_ID,
   INCLUSION_TEAM_ID
 } from "../public/config.js";
@@ -142,7 +141,6 @@ async function fetchClubPage({ from, to, page }) {
 async function fetchInclusionPage({ from, to, page }) {
   const params = new URLSearchParams({
     team_id: INCLUSION_TEAM_ID,
-    phase_id: INCLUSION_PHASE_ID,
     per_page: "100",
     page: String(page),
     date_from: from,
@@ -151,7 +149,7 @@ async function fetchInclusionPage({ from, to, page }) {
 
   return fetchMatchPage({
     params,
-    referer: `${HANDBALL_BASE}/team/${INCLUSION_TEAM_ID}?season_id=${INCLUSION_SEASON_ID}&phaseId=${INCLUSION_PHASE_ID}`
+    referer: `${HANDBALL_BASE}/team/${INCLUSION_TEAM_ID}?season_id=${INCLUSION_SEASON_ID}`
   });
 }
 
@@ -319,7 +317,6 @@ async function main() {
     },
     team: {
       id: INCLUSION_TEAM_ID,
-      phaseId: INCLUSION_PHASE_ID,
       seasonId: INCLUSION_SEASON_ID
     },
     matches: inclusionMatches
