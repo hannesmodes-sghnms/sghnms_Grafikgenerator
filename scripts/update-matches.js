@@ -1,11 +1,24 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { CLUB_ID, HANDBALL_BASE } from "../public/config.js";
+import {
+  CLUB_ID,
+  HANDBALL_BASE,
+  INCLUSION_PHASE_ID,
+  INCLUSION_SEASON_ID,
+  INCLUSION_TEAM_ID
+} from "../public/config.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const OUTPUT_FILE = path.join(__dirname, "..", "public", "data", "matches.json");
+const INCLUSION_OUTPUT_FILE = path.join(
+  __dirname,
+  "..",
+  "public",
+  "data",
+  "inclusion-matches.json"
+);
 
 const BROWSER_USER_AGENT =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
@@ -71,21 +84,13 @@ async function getClientToken(forceRefresh = false) {
   return token;
 }
 
-async function fetchClubPage({ from, to, page, retry = true }) {
+async function fetchMatchPage({ params, referer, retry = true }) {
   const token = await getClientToken();
-
-  const params = new URLSearchParams({
-    club_id: CLUB_ID,
-    per_page: "100",
-    page: String(page),
-    date_from: from,
-    date_to: to
-  });
 
   const response = await fetch(`${HANDBALL_BASE}/api/new/matches?${params}`, {
     headers: {
       Accept: "application/json",
-      Referer: `${HANDBALL_BASE}/club/${CLUB_ID}`,
+      Referer: referer,
       "X-Client-Token": token,
       "User-Agent": BROWSER_USER_AGENT
     }
@@ -111,12 +116,43 @@ async function fetchClubPage({ from, to, page, retry = true }) {
   ) {
     cachedClientToken = null;
     await getClientToken(true);
-    return fetchClubPage({ from, to, page, retry: false });
+    return fetchMatchPage({ params, referer, retry: false });
   }
 
   throw new Error(
     `handball.net liefert HTTP ${response.status}: ${errorText.slice(0, 300)}`
   );
+}
+
+async function fetchClubPage({ from, to, page }) {
+  const params = new URLSearchParams({
+    club_id: CLUB_ID,
+    per_page: "100",
+    page: String(page),
+    date_from: from,
+    date_to: to
+  });
+
+  return fetchMatchPage({
+    params,
+    referer: `${HANDBALL_BASE}/club/${CLUB_ID}`
+  });
+}
+
+async function fetchInclusionPage({ from, to, page }) {
+  const params = new URLSearchParams({
+    team_id: INCLUSION_TEAM_ID,
+    phase_id: INCLUSION_PHASE_ID,
+    per_page: "100",
+    page: String(page),
+    date_from: from,
+    date_to: to
+  });
+
+  return fetchMatchPage({
+    params,
+    referer: `${HANDBALL_BASE}/team/${INCLUSION_TEAM_ID}?season_id=${INCLUSION_SEASON_ID}&phaseId=${INCLUSION_PHASE_ID}`
+  });
 }
 
 /*
@@ -231,13 +267,13 @@ function sortKey(match) {
   return `${match.date}T${match.time}`;
 }
 
-async function fetchSeasonMatches(dateFrom, dateTo) {
+async function fetchSeasonMatches(dateFrom, dateTo, fetchPage = fetchClubPage) {
   const all = [];
   let page = 1;
   let lastPage = 1;
 
   do {
-    const payload = await fetchClubPage({
+    const payload = await fetchPage({
       from: dateFrom,
       to: dateTo,
       page
@@ -259,10 +295,15 @@ async function main() {
   const { dateFrom, dateTo } = getSeasonRange();
 
   console.log(`Lade handball.net Daten ${dateFrom} bis ${dateTo} ...`);
-  const matches = await fetchSeasonMatches(dateFrom, dateTo);
+  const [matches, inclusionMatches] = await Promise.all([
+    fetchSeasonMatches(dateFrom, dateTo),
+    fetchSeasonMatches(dateFrom, dateTo, fetchInclusionPage)
+  ]);
+
+  const generatedAt = new Date().toISOString();
 
   const payload = {
-    generatedAt: new Date().toISOString(),
+    generatedAt,
     season: {
       dateFrom,
       dateTo
@@ -270,10 +311,34 @@ async function main() {
     matches
   };
 
+  const inclusionPayload = {
+    generatedAt,
+    season: {
+      dateFrom,
+      dateTo
+    },
+    team: {
+      id: INCLUSION_TEAM_ID,
+      phaseId: INCLUSION_PHASE_ID,
+      seasonId: INCLUSION_SEASON_ID
+    },
+    matches: inclusionMatches
+  };
+
   await fs.mkdir(path.dirname(OUTPUT_FILE), { recursive: true });
-  await fs.writeFile(OUTPUT_FILE, `${JSON.stringify(payload, null, 2)}\n`, "utf8");
+  await Promise.all([
+    fs.writeFile(OUTPUT_FILE, `${JSON.stringify(payload, null, 2)}\n`, "utf8"),
+    fs.writeFile(
+      INCLUSION_OUTPUT_FILE,
+      `${JSON.stringify(inclusionPayload, null, 2)}\n`,
+      "utf8"
+    )
+  ]);
 
   console.log(`${matches.length} Spiele nach ${OUTPUT_FILE} geschrieben.`);
+  console.log(
+    `${inclusionMatches.length} Inklusionsspiele nach ${INCLUSION_OUTPUT_FILE} geschrieben.`
+  );
 }
 
 main().catch((error) => {
