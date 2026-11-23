@@ -10,13 +10,14 @@ https://hannesmodes-sghnms.github.io/sghnms_Grafikgenerator/
 
 ## Varianten
 
-Der Generator unterstützt fünf Modi:
+Der Generator unterstützt sechs Modi:
 
 - **Spieltag** – gruppierte Heim- und Auswärtsspiel-Slides einschließlich der passenden Inklusionsspieltage
 - **Inklusionsspieltag** – eigenständiger Spieltag-Slide für SG Handiball/Handballsprotten; alle Spiele eines Spieltags werden unabhängig von Heim-/Auswärtsstatus gemeinsam dargestellt
-- **Ergebnisse** – gruppierte Ergebnis-Slides für abgeschlossene Spiele
+- **Ergebnisse** – gruppierte Ergebnis-Slides für abgeschlossene Spiele einschließlich der passenden Inklusionsergebnisse
+- **Inklusionsergebnisse** – eigenständiger Ergebnis-Slide für SG Handiball/Handballsprotten; alle abgeschlossenen Spiele eines Spieltags werden nach Datum und Halle gemeinsam dargestellt
 - **Einzelspiel** – ein ausgewähltes Spiel oder ein kompletter Inklusionsspieltag; der Spieltag-Slide ist identisch mit der Spieltagsansicht
-- **Einzelergebnis** – Einzelspiel-Ergebnis mit Heimteam links, Auswärtsteam rechts und Ergebnis in der Mitte
+- **Einzelergebnis** – ein ausgewähltes Einzelspiel-Ergebnis oder ein kompletter Inklusions-Ergebnis-Slide; die Inklusionsansicht ist identisch mit der Ergebnisübersicht
 
 Die Ausgabe erfolgt im festen Format **1122 × 1402 px**. Der PNG-Export läuft vollständig clientseitig über `html2canvas`.
 
@@ -46,7 +47,7 @@ public/data/matches.json
 public/data/inclusion-matches.json
 ```
 
-Die Inklusionsspiele werden bewusst nicht in den regulären SG-Datensatz gemischt. Sie werden saisonweit ausschließlich über die Team-ID und den Saisonzeitraum geladen, damit auch Spieltage aus weiteren Phasen automatisch enthalten sind. Der Modus **Inklusionsspieltag** gruppiert diese Daten nach Datum und Halle und nutzt die eigene Headline **SPIELTAG**.
+Die Inklusionsspiele werden bewusst nicht in den regulären SG-Datensatz gemischt. Sie werden saisonweit ausschließlich über die Team-ID und den Saisonzeitraum geladen, damit auch Spieltage aus weiteren Phasen automatisch enthalten sind. Die Modi **Inklusionsspieltag** und **Inklusionsergebnisse** gruppieren diese Daten nach Datum und Halle. Der Spieltag nutzt die eigene Headline **SPIELTAG**, der Ergebnis-Slide die bestehende Headline **ERGEBNISSE**. Beide Inklusions-Slides werden zusätzlich in den allgemeinen Ansichten **Spieltag** beziehungsweise **Ergebnisse** angezeigt und sind in den passenden Einzelansichten identisch auswählbar.
 
 ## Deployment
 
