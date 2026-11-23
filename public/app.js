@@ -1390,25 +1390,46 @@ form.addEventListener("submit", (event) => {
     const resultMode = mode === "single-result";
     const selectedValue = singleMatchInput.value;
 
-    if (!resultMode && selectedValue.startsWith(INCLUSION_GAMEDAY_OPTION_PREFIX)) {
-      const groupKey = selectedValue.slice(INCLUSION_GAMEDAY_OPTION_PREFIX.length);
-      const inclusionGamedaySlides = buildSlides(filteredInclusionMatches, "inclusion")
-        .filter((slide) => slide.groupKey === groupKey);
+    const inclusionSelection = !resultMode &&
+      selectedValue.startsWith(INCLUSION_GAMEDAY_OPTION_PREFIX)
+      ? {
+          prefix: INCLUSION_GAMEDAY_OPTION_PREFIX,
+          renderMode: "inclusion",
+          emptyMessage: "Bitte einen gültigen Inklusionsspieltag auswählen.",
+          singularLabel: "Spieltag-Slide",
+          pluralLabel: "Spieltag-Slides"
+        }
+      : resultMode && selectedValue.startsWith(INCLUSION_RESULT_OPTION_PREFIX)
+        ? {
+            prefix: INCLUSION_RESULT_OPTION_PREFIX,
+            renderMode: "inclusion-results",
+            emptyMessage: "Bitte einen gültigen Inklusions-Ergebnisspieltag auswählen.",
+            singularLabel: "Ergebnis-Slide",
+            pluralLabel: "Ergebnis-Slides"
+          }
+        : null;
 
-      if (!inclusionGamedaySlides.length) {
-        setStatus("Bitte einen gültigen Inklusionsspieltag auswählen.", "empty");
+    if (inclusionSelection) {
+      const groupKey = selectedValue.slice(inclusionSelection.prefix.length);
+      const inclusionSlides = buildSlides(
+        filteredInclusionMatches,
+        inclusionSelection.renderMode
+      ).filter((slide) => slide.groupKey === groupKey);
+
+      if (!inclusionSlides.length) {
+        setStatus(inclusionSelection.emptyMessage, "empty");
         return;
       }
 
-      inclusionGamedaySlides.forEach((slide) => {
-        slides.appendChild(slideCard(slide, "inclusion"));
+      inclusionSlides.forEach((slide) => {
+        slides.appendChild(slideCard(slide, inclusionSelection.renderMode));
       });
       slides.appendChild(sponsorSlideCard(format));
-      const inclusionGamedaySlideLabel = inclusionGamedaySlides.length === 1
-        ? "Spieltag-Slide"
-        : "Spieltag-Slides";
+      const inclusionSlideLabel = inclusionSlides.length === 1
+        ? inclusionSelection.singularLabel
+        : inclusionSelection.pluralLabel;
       setStatus(
-        `${inclusionGamedaySlides.length} ${inclusionGamedaySlideLabel} + 1 Sponsoren-Slide erzeugt.`,
+        `${inclusionSlides.length} ${inclusionSlideLabel} + 1 Sponsoren-Slide erzeugt.`,
         "success"
       );
       return;
@@ -1439,15 +1460,20 @@ form.addEventListener("submit", (event) => {
     return;
   }
 
-  const regularSlides = mode === "inclusion"
+  const inclusionRenderMode = mode === "gameday" || mode === "inclusion"
+    ? "inclusion"
+    : mode === "results" || mode === "inclusion-results"
+      ? "inclusion-results"
+      : null;
+  const regularSlides = mode === "inclusion" || mode === "inclusion-results"
     ? []
     : buildSlides(filteredMatches, mode);
-  const inclusionGamedaySlides = mode === "gameday" || mode === "inclusion"
-    ? buildSlides(filteredInclusionMatches, "inclusion")
+  const inclusionSlides = inclusionRenderMode
+    ? buildSlides(filteredInclusionMatches, inclusionRenderMode)
     : [];
   const generatedSlides = [
     ...regularSlides.map((slide) => ({ slide, renderMode: mode })),
-    ...inclusionGamedaySlides.map((slide) => ({ slide, renderMode: "inclusion" }))
+    ...inclusionSlides.map((slide) => ({ slide, renderMode: inclusionRenderMode }))
   ].sort((a, b) =>
     a.slide.date.localeCompare(b.slide.date) || a.slide.key.localeCompare(b.slide.key)
   );
@@ -1465,8 +1491,11 @@ form.addEventListener("submit", (event) => {
 
   slides.appendChild(sponsorSlideCard(format));
 
+  const generatedSlideLabel = mode === "results" || mode === "inclusion-results"
+    ? "Ergebnis-Slide(s)"
+    : "Spiel-Slide(s)";
   setStatus(
-    `${generatedSlides.length} Spiel-Slide(s) + 1 Sponsoren-Slide erzeugt.`,
+    `${generatedSlides.length} ${generatedSlideLabel} + 1 Sponsoren-Slide erzeugt.`,
     "success"
   );
 });
