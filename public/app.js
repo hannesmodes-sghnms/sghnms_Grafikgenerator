@@ -48,6 +48,7 @@ let inclusionDataSet = null;
 let logoManifest = { generatedAt: null, clubs: {}, teams: {} };
 const matchOverrides = new Map();
 const INCLUSION_GAMEDAY_OPTION_PREFIX = "inclusion-gameday:";
+const INCLUSION_RESULT_OPTION_PREFIX = "inclusion-result:";
 
 function isoDate(date) {
   const year = date.getFullYear();
@@ -69,9 +70,7 @@ function refreshSingleMatchOptions() {
   const isSingleResult = modeInput.value === "single-result";
   singleMatchField.hidden = !isSingle;
   form.classList.toggle("controls--single", isSingle);
-  singleMatchLabel.textContent = isSingleResult
-    ? "Spiel auswählen"
-    : "Spiel oder Spieltag auswählen";
+  singleMatchLabel.textContent = "Spiel oder Spieltag auswählen";
 
   if (!isSingle || !dataSet?.matches) return;
 
@@ -89,11 +88,12 @@ function refreshSingleMatchOptions() {
     }))
     .filter((item) => item.label);
 
-  const inclusionGamedayOptions = isSingleResult
-    ? []
-    : buildInclusionGamedayChoices(matchesInRange(inclusionDataSet?.matches, from, to));
+  const inclusionSlideOptions = buildInclusionSlideChoices(
+    matchesInRange(inclusionDataSet?.matches, from, to),
+    isSingleResult ? "inclusion-results" : "inclusion"
+  );
 
-  const options = [...matchOptions, ...inclusionGamedayOptions]
+  const options = [...matchOptions, ...inclusionSlideOptions]
     .sort((a, b) => a.sortKey.localeCompare(b.sortKey));
 
   singleMatchInput.innerHTML = options.length
@@ -345,9 +345,11 @@ async function downloadAllSlides(button, { mode, format, from, to }) {
     const zip = await createZipBlob(files);
     const modeLabel = mode === "results"
       ? "ergebnisse"
-      : mode === "inclusion"
-        ? "inklusionsspieltag"
-        : "spieltag";
+      : mode === "inclusion-results"
+        ? "inklusionsergebnisse"
+        : mode === "inclusion"
+          ? "inklusionsspieltag"
+          : "spieltag";
     const zipFilename = `sghnms-${modeLabel}-${from}-bis-${to}-${format}.zip`;
     triggerBlobDownload(zip, zipFilename);
     setStatus(`${files.length} Dateien als ${zipFilename} heruntergeladen.`, "success");
@@ -390,16 +392,20 @@ function matchesInRange(matches = [], from = "", to = "") {
   );
 }
 
-function buildInclusionGamedayChoices(matches = []) {
+function buildInclusionSlideChoices(matches = [], mode = "inclusion") {
   const choices = new Map();
+  const resultMode = mode === "inclusion-results";
+  const prefix = resultMode
+    ? INCLUSION_RESULT_OPTION_PREFIX
+    : INCLUSION_GAMEDAY_OPTION_PREFIX;
 
-  for (const slide of buildSlides(matches, "inclusion")) {
+  for (const slide of buildSlides(matches, mode)) {
     if (choices.has(slide.groupKey)) continue;
 
     const dateText = slide.meta?.[1] || slide.date;
     choices.set(slide.groupKey, {
-      value: `${INCLUSION_GAMEDAY_OPTION_PREFIX}${slide.groupKey}`,
-      label: `${dateText} · SPIELTAG · ${slide.venue}`,
+      value: `${prefix}${slide.groupKey}`,
+      label: `${dateText} · ${slide.title} · ${slide.venue}`,
       sortKey: `${slide.date}:00:00:${slide.groupKey}`
     });
   }
@@ -408,10 +414,13 @@ function buildInclusionGamedayChoices(matches = []) {
 }
 
 function buildSlides(matches, mode) {
+  const resultMode = mode === "results" || mode === "inclusion-results";
+  const inclusionMode = mode === "inclusion" || mode === "inclusion-results";
+
   const relevant = matches
     .map((match) => ({ match, perspective: ownTeam(match) }))
     .filter((item) => item.perspective)
-    .filter((item) => mode !== "results" || isFinished(item.match));
+    .filter((item) => !resultMode || isFinished(item.match));
 
   const groups = new Map();
 
@@ -423,12 +432,12 @@ function buildSlides(matches, mode) {
 
     const shortVenue = overviewVenueLabel(match.venue?.name);
 
-    if (mode === "inclusion") {
-      key = `inclusion:${match.date}:${shortVenue}`;
-      title = BRAND.inclusionTitle;
+    if (inclusionMode) {
+      key = `${mode}:${match.date}:${shortVenue}`;
+      title = resultMode ? BRAND.resultsTitle : BRAND.inclusionTitle;
       meta = [match.weekday, match.dateText, BRAND.inclusionLeague];
       venue = shortVenue;
-    } else if (mode === "results") {
+    } else if (resultMode) {
       if (perspective.isHome) {
         key = `results:home:${match.date}:${shortVenue}`;
         meta = [match.weekday, match.dateText];
@@ -540,7 +549,9 @@ function headlineAssetForTitle(title = "") {
 }
 
 function renderMatchCard(match, mode) {
-  const center = mode === "results"
+  const resultMode = mode === "results" || mode === "inclusion-results";
+  const inclusionMode = mode === "inclusion" || mode === "inclusion-results";
+  const center = resultMode
     ? `<div class="score"><span class="score-number">${escapeHtml(match.ownScore)}</span><span class="score-separator">:</span><span class="score-number">${escapeHtml(match.opponentScore)}</span></div>`
     : `<div class="time">${escapeHtml(match.time)}</div><div class="time-label">UHR</div>`;
 
@@ -552,17 +563,17 @@ function renderMatchCard(match, mode) {
     teamLabelClasses.push("team-label--long");
   }
 
-  if (mode === "inclusion") {
+  if (inclusionMode) {
     teamLabelClasses.push("team-label--inclusion");
   }
 
-  const renderedTeamLabel = mode === "inclusion"
+  const renderedTeamLabel = inclusionMode
     ? escapeHtml(match.teamLabel).replace("/", "/<br>")
     : escapeHtml(match.teamLabel);
 
   return `
     <div class="match-card-shell">
-      <div class="match-card ${mode === "results" ? "match-card--results" : ""}">
+      <div class="match-card ${resultMode ? "match-card--results" : ""}">
         <img class="match-card-bg" src="assets/canva/match-card.png" alt="" aria-hidden="true">
         <div class="match-card-rail">
           <div class="team-box">
@@ -927,7 +938,7 @@ function renderOverrideRow(match, mode) {
         >
       </label>
 
-      ${mode === "results"
+      ${mode === "results" || mode === "inclusion-results"
         ? `
           <label>
             <span>Ergebnis</span>
